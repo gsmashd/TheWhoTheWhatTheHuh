@@ -26,16 +26,16 @@ int processSingle(FILE *ifile, char *bname, uint64_t *total, uint64_t *dupes, ch
     if(!line) return 1;
 
     //Non-duplicate output
-    cmd = calloc(strlen(bname) + strlen("_R1.fastq.gz pigz -p >  ") + strlen(pigz_threads), sizeof(char));
-    if(!cmd) return 1; 
-    sprintf(cmd, "pigz -p %s > %s_R1.fastq.gz", pigz_threads, bname);
+    cmd = calloc(strlen(bname) + strlen("_R1_001.fastq.gz pigz -p >  ") + strlen(pigz_threads), sizeof(char));
+    if(!cmd) return 1;
+    sprintf(cmd, "pigz -p %s > %s_R1_001.fastq.gz", pigz_threads, bname);
     o1 = popen(cmd, "w");
     free(cmd);
 
     //duplicate output
-    cmd = calloc(strlen(bname) + strlen("_R1.optical_duplicates.fastq.gz pigz -p >  ") + strlen(pigz_threads), sizeof(char));
+    cmd = calloc(strlen(bname) + strlen("_R1_001.optical_duplicates.fastq.gz pigz -p >  ") + strlen(pigz_threads), sizeof(char));
     if(!cmd) return 1;
-    sprintf(cmd, "pigz -p %s > %s_R1_optical_duplicates.fastq.gz", pigz_threads, bname);
+    sprintf(cmd, "pigz -p %s > %s_R1_001_optical_duplicates.fastq.gz", pigz_threads, bname);
     o1d = popen(cmd, "w");
     free(cmd);
 
@@ -64,7 +64,7 @@ int processSingle(FILE *ifile, char *bname, uint64_t *total, uint64_t *dupes, ch
 
     return 0;
 }
-    
+
 int processPaired(FILE *ifile, char *bname, uint64_t *total, uint64_t *dupes, char *pigz_threads) {
     char *cmd = NULL;
     FILE *o1=NULL, *o2=NULL, *o1d=NULL, *o2d=NULL;
@@ -73,18 +73,18 @@ int processPaired(FILE *ifile, char *bname, uint64_t *total, uint64_t *dupes, ch
     if(!line) return 1;
 
     //Non-duplicate output
-    cmd = calloc(strlen(bname) + strlen("_R1.fastq.gz pigz -p >  ") + strlen(pigz_threads), sizeof(char));
-    if(!cmd) return 1; 
-    sprintf(cmd, "pigz -p %s > %s_R1.fastq.gz", pigz_threads, bname);
+    cmd = calloc(strlen(bname) + strlen("_R1_001.fastq.gz pigz -p >  ") + strlen(pigz_threads), sizeof(char));
+    if(!cmd) return 1;
+    sprintf(cmd, "pigz -p %s > %s_R1_001.fastq.gz", pigz_threads, bname);
     o1 = popen(cmd, "w");
     sprintf(cmd, "pigz -p %s > %s_R2.fastq.gz", pigz_threads, bname);
     o2 = popen(cmd, "w");
     free(cmd);
 
     //duplicate output
-    cmd = calloc(strlen(bname) + strlen("_R1.optical_duplicates.fastq.gz pigz -p >  ") + strlen(pigz_threads), sizeof(char));
-    if(!cmd) return 1; 
-    sprintf(cmd, "pigz -p %s > %s_R1_optical_duplicates.fastq.gz", pigz_threads, bname);
+    cmd = calloc(strlen(bname) + strlen("_R1_001_optical_duplicates.fastq.gz pigz -p >  ") + strlen(pigz_threads), sizeof(char));
+    if(!cmd) return 1;
+    sprintf(cmd, "pigz -p %s > %s_R1_001_optical_duplicates.fastq.gz", pigz_threads, bname);
     o1d = popen(cmd, "w");
     sprintf(cmd, "pigz -p %s > %s_R2_optical_duplicates.fastq.gz", pigz_threads, bname);
     o2d = popen(cmd, "w");
@@ -126,7 +126,7 @@ int processPaired(FILE *ifile, char *bname, uint64_t *total, uint64_t *dupes, ch
 
     return 0;
 }
-    
+
 
 int main(int argc, char *argv[]) {
     int PE, rv;
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Splits an interleaved single or paired-end file into 2/4 output files according\n"
 "to whether 'duplicate' is in the read name. This is useful to split the output\n"
 "of clumpify into duplicates and non-duplicates. The metrics are then written to\n"
-"basename.deduplicate.txt and files to basename_R1.fastq.gz,\n"
+"basename.deduplicate.txt and files to basename_R1_001.fastq.gz,\n"
 "basename_R1_optical_duplicates.fastq.gz and so on.\n\n");
         fprintf(stderr, "paired:      1 is the input is PE, 0 otherwise\n");
         fprintf(stderr, "basename:    The basename for the output files\n");

@@ -195,7 +195,7 @@ def makeProjectPDF(node, project, config) :
     fTR = Frame(pdf.leftMargin+pdf.width/2, pdf.height, width=pdf.width/2, height=topHeight, id="col2")
     fB = Frame(pdf.leftMargin, pdf.bottomMargin, pdf.width, pdf.height-topHeight, id="bottom")
     fM = Frame(pdf.leftMargin, pdf.bottomMargin, pdf.width, pdf.height, id="main")
-    
+
     elements = []
     PE = False
     if(len(node[0][0][0][0][1]) == 3) :
@@ -334,7 +334,7 @@ def makeProjectPDF(node, project, config) :
     key = []
     key.append([Paragraph("Sample ID",
             stylesheet['BodyText']),
-        Paragraph("The sample ID as provided to the sequencer in the sample sheet. This may not match the final file name, but will match the directory in which it's held.", 
+        Paragraph("The sample ID as provided to the sequencer in the sample sheet. This may not match the final file name, but will match the directory in which it's held.",
             stylesheet['BodyText'])])
     key.append([Paragraph("Sample Name",
             stylesheet['BodyText']),
@@ -344,35 +344,35 @@ def makeProjectPDF(node, project, config) :
             stylesheet['BodyText']),
         Paragraph("The sample barcode added by the sequencing facility (or you, if you created the libraries yourself). This will generally be 6 nucleotides long.",
             stylesheet['BodyText'])])
-    key.append([Paragraph("Lane", 
+    key.append([Paragraph("Lane",
             stylesheet['BodyText']),
         Paragraph("The lane number on the flow cell (there are 8 of them).",
             stylesheet['BodyText'])])
-    key.append([Paragraph("# Reads", 
+    key.append([Paragraph("# Reads",
             stylesheet['BodyText']),
         Paragraph("The number of reads in a given file. For paired-end datasets, this is equivalent to the number of fragments sequenced, rather than summing the counts for read #1 and read #2. Note that this includes only reads passing the quality filter.",
             stylesheet['BodyText'])])
-    key.append([Paragraph("% Bases >= Q30 Read #1", 
+    key.append([Paragraph("% Bases >= Q30 Read #1",
             stylesheet['BodyText']),
         Paragraph("The percentage of bases in read #1 of a pair having a Phred-scaled score of at least 30, meaning that the 0.1% or less chance that they're incorrect.",
             stylesheet['BodyText'])])
-    key.append([Paragraph("Ave. Qual. Read #1", 
+    key.append([Paragraph("Ave. Qual. Read #1",
             stylesheet['BodyText']),
         Paragraph("The average Phred-scaled base quality of bases in read #1 of a pair. This number of -10*log10(Probability that the call is incorrect). In other words, if a call is 100% likely to be wrong, the score is 0 (or 10 for 10% likelihood, 20 for 1% likelihood, etc.).",
             stylesheet['BodyText'])])
-    key.append([Paragraph("% Bases >= Q30 Read #2", 
+    key.append([Paragraph("% Bases >= Q30 Read #2",
             stylesheet['BodyText']),
         Paragraph("Identical to '% Bases >= Q30 Read #1', but for read #2 of a pair.",
             stylesheet['BodyText'])])
-    key.append([Paragraph("Ave. Qual. Read #2", 
+    key.append([Paragraph("Ave. Qual. Read #2",
             stylesheet['BodyText']),
         Paragraph("Identical to 'Ave. Qual. Read #1', but for read #1 of a pair.",
             stylesheet['BodyText'])])
-    key.append([Paragraph("# Reads", 
+    key.append([Paragraph("# Reads",
             stylesheet['BodyText']),
         Paragraph("Identical to '% Bases >= Q30 Read #1', but for single-end datasets.",
             stylesheet['BodyText'])])
-    key.append([Paragraph("Ave. Qual.", 
+    key.append([Paragraph("Ave. Qual.",
             stylesheet['BodyText']),
         Paragraph("Identical to 'Ave. Qual. Read #1', but for single-end datasets.",
             stylesheet['BodyText'])])
@@ -494,7 +494,8 @@ def parseConversionStats(config) :
         if(project.get("name") == "all") :
             metrics = getFCmetrics(project)
         else :
-            makeProjectPDF(project, project.get("name"), config)
+            #makeProjectPDF(project, project.get("name"), config)
+            continue
     return metrics
 
 def enoughFreeSpace(config) :

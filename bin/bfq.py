@@ -92,6 +92,7 @@ while True:
         sleep(config)
         continue
 
+    #print("PostMakeSteps DONE")
     #Get more statistics and create PDFs
     try :
         message += "\n\n"+bcl2fastq_pipeline.misc.parseConversionStats(config)
@@ -101,6 +102,7 @@ while True:
         sleep(config)
         continue
 
+    #print("parseConversionStats DONE")
     #Copy over xml, FastQC, and PDF stuff
     try:
         message += bcl2fastq_pipeline.makeFastq.cpSeqFac(config)
@@ -109,29 +111,11 @@ while True:
         bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error in cpSeqFac")
         sleep(config)
         continue
-
+    #print("CP seqfaq DONE")
     runTime = datetime.datetime.now()-startTime
     startTime = datetime.datetime.now()
-
-    #Transfer data to groups
-    try : 
-        message += bcl2fastq_pipeline.misc.transferData(config)
-    except :
-        syslog.syslog("Got an error during transferData\n")
-        bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during transferData")
-        sleep(config)
-        continue
-
-    #Upload to Galaxy
-    try :
-        message += bcl2fastq_pipeline.galaxy.linkIntoGalaxy(config)
-    except:
-        syslog.syslog("Got an error while uploading to Galaxy!\n")
-        bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error while uploading to Galaxy!")
-        sleep(config)
-
+    message += "Did not transfer data\n"
     transferTime = datetime.datetime.now()-startTime
-
     #Update parkour, errors are non-fatal here
     try:
         message += bcl2fastq_pipeline.misc.jsonParkour(config, message)
@@ -139,6 +123,7 @@ while True:
         syslog.syslog("Received an error while updating Parkour!\n")
         bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error while updating Parkour!")
 
+    #print("jsonParkour DONE")
     #Email finished message
     try :
         bcl2fastq_pipeline.misc.finishedEmail(config, message, runTime, transferTime)
@@ -146,6 +131,6 @@ while True:
         #Unrecoverable error
         syslog.syslog("Couldn't send the finished email! Quiting")
         sys.exit()
-
+    #print("FinishedEmail DONE")
     #Mark the flow cell as having been processed
     bcl2fastq_pipeline.findFlowCells.markFinished(config)

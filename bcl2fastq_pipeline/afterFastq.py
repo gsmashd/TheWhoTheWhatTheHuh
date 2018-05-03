@@ -46,6 +46,8 @@ def plotFastqScreen(fname) :
             continue
         if(line[0].startswith("Library")) :
             continue
+        if(line[0].startswith("Genome")) :
+            continue
         species.append(line[0])
         ohol.append(float(line[5]))
         mhol.append(float(line[7]))
@@ -63,7 +65,7 @@ def plotFastqScreen(fname) :
     p3 = plt.bar(ind, tuple(ohml), color="#FF0000", bottom=tuple(ohol+mhol))
     p4 = plt.bar(ind, tuple(mhml), color="#FF6699", bottom=tuple(ohol+mhol+ohml))
 
-    plt.title("%s" % fname.replace("_R1_screen.txt","").split("/")[-1])
+    plt.title("%s" % fname.replace("_R1_001_screen.txt","").split("/")[-1])
     plt.ylabel("%")
     plt.ylim((0,105))
     plt.xticks(ind, species, rotation="vertical")
@@ -77,47 +79,57 @@ def fastq_screen_worker(fname) :
     global localConfig
     config = localConfig
 
+    os.chdir(os.path.dirname(fname))
+
     #Skip read #2
     bname = fname.split("/")[-1]
     if(bname[-12:] == "_R2.fastq.gz") :
         return
 
     #If the image is already there, then skip
-    if os.path.exists("{}_screen.png".format(fname[:-9])) and os.path.exists("{}_screen.txt".format(fname[:-9])):
+    if os.path.exists("{}_screen.png".format(fname[:-9])) and os.path.exists("{}subsampled_screen.txt".format(fname[:-16])):
         return
 
     #Subsample
-    ofile=fname.replace("_R1.fastq.gz","subsampled.fastq")
+    ofile=fname.replace("_R1_001.fastq.gz","subsampled.fastq")
+    #print("ofile: {}".format(ofile))
     cmd = "%s sample %s %s %s" % (
         config.get("fastq_screen","seqtk_command"),
         config.get("fastq_screen","seqtk_options"),
         fname,
         config.get("fastq_screen","seqtk_size"))
+    #print("SEQTK COMMAND: {}".format(cmd))
     syslog.syslog("[fastq_screen_worker] Running %s\n" % cmd)
     o = open(ofile, "w")
     subprocess.check_call(cmd, shell=True, stdout=o)
     o.close()
 
     #fastq_screen
-    cmd = "%s %s '%s'" % (
+    cmd = "%s %s --outdir '%s' '%s'" % (
         config.get("fastq_screen", "fastq_screen_command"),
         config.get("fastq_screen", "fastq_screen_options"),
+        os.path.dirname(ofile),
         ofile)
+    #print("FASTQ_SCREEN COMMAND: {}".format(cmd))
     syslog.syslog("[fastq_screen_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
     #Unlink/rename
-    os.unlink(ofile)
-    os.rename(ofile.replace(".fastq","_screen.txt"), fname.replace("_R1.fastq.gz", "_R1_screen.txt"))
+    #os.unlink(ofile)
+    os.rename(ofile.replace(".fastq","_screen.png"), fname.replace("_R1_001.fastq.gz", "_R1_001_screen.png"))
+
+    #print("Ofile {}".format(ofile))
+    #print("Fname {}".format(fname))
 
     #Create the images
-    plotFastqScreen(fname.replace("_R1.fastq.gz", "_R1_screen.txt"))
+    #plotFastqScreen(fname.replace("_R1_001.fastq.gz", "subsampled_screen.txt"))
 
 def FastQC_worker(fname) :
+    #print("Hello from fastqc")
     global localConfig
     config = localConfig
     lanes = config.get("Options", "lanes")
-    if lanes != "": 
+    if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
     projectName = fname.split("/")[-3] #It's the penultimate directory
@@ -146,6 +158,10 @@ def FastQC_worker(fname) :
           lanes,
           projectName,
           libName), exist_ok=True)
+
+    #print(cmd)
+    #print("makedir")
+    #print("%s/%s%s/FASTQC_%s/%s" % (config.get("Paths","outputDir"),config.get("Options","runID"),lanes,projectName,libName))
     syslog.syslog("[FastQC_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
@@ -171,10 +187,14 @@ def multiqc_worker(d) :
     config = localConfig
     oldWd = os.getcwd()
     os.chdir(d)
+    #print("d = {}".format(d))
     dname = d.split("/")
     dname[-1] = "FASTQC_{}".format(dname[-1])
-    dname = "/".join(dname)
-    cmd = "{} {} {}/*/*.zip".format(config.get("MultiQC", "multiqc_command"), config.get("MultiQC", "multiqc_options"), dname)
+    #dname = "/".join(dname)
+    dname = os.path.join(d,dname[-1])
+    #print("dname = {}".format(dname))
+    cmd = "{} {} {}/*/*.zip {}/Project_*/*".format(config.get("MultiQC", "multiqc_command"), config.get("MultiQC", "multiqc_options"), dname, d)
+    #print("MultiQC cmd {}".format(cmd))
     syslog.syslog("[multiqc_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
@@ -185,7 +205,7 @@ def clumpify_worker(d):
     oldWd = os.getcwd()
     os.chdir(d)
 
-    read1s = glob.glob("*_R1.fastq.gz") 
+    read1s = glob.glob("*_R1_001.fastq.gz")
     PE = 1
     for r1 in read1s:
         # This takes a while, don't duplicate work
@@ -216,12 +236,13 @@ def clumpify_worker(d):
     os.chdir(oldWd)
 
 def clumpifyNextSeq_worker(d):
+    print("Hello from clumpify")
     global localConfig
     config = localConfig
     oldWd = os.getcwd()
     os.chdir(d)
 
-    read1s = glob.glob("*_R1.fastq.gz")
+    read1s = glob.glob("*_R1_001.fastq.gz")
     PE = 1
     for r1 in read1s:
         # This takes a while, don't duplicate work
@@ -239,16 +260,17 @@ def clumpifyNextSeq_worker(d):
                                                                                        config.get("bbmap", "clumpify_threads"))
         else:
             PE = 0
-            cmd = "{} in={} out=temp.fq.gz {} {} dupedist={} threads={}".format(config.get("bbmap", "clumpify_command"),
+            cmd = "{} in={} out=temp.fq.gz {} {} threads={}".format(config.get("bbmap", "clumpify_command"),
                                                                                 r1,
                                                                                 config.get("bbmap", "clumpify_options"),
                                                                                 config.get("bbmap", "clumpify_NextSeq_options"),
-                                                                                config.get("bbmap", "clumpify_NextSeq_dist"),
                                                                                 config.get("bbmap", "clumpify_threads"))
         syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
+        print("Clumpify cmd: {}".format(cmd))
         subprocess.check_call(cmd, shell=True)
-        cmd = " ".join(["splitFastq", "temp.fq.gz", "{}".format(PE), r1[:-12], "{}".format(config.get("bbmap", "pigzThreads"))])
+        cmd = " ".join(["splitFastq", "temp.fq.gz", "{}".format(PE), r1[:-16], "{}".format(config.get("bbmap", "pigzThreads"))])
         syslog.syslog("[clumpify_worker] Splitting %s\n" % cmd)
+        print("Clumpify cmd: {}".format(cmd))
         subprocess.check_call(cmd, shell=True)
         os.remove("temp.fq.gz")
     os.chdir(oldWd)
@@ -263,7 +285,7 @@ def parserDemultiplexStats(config) :
     undetermined and the later simply the total clusters
     '''
     lanes = config.get("Options", "lanes")
-    if lanes != "": 
+    if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
     totals = [0,0,0,0,0,0,0,0]
@@ -310,18 +332,24 @@ def postMakeSteps(config) :
     will try to use a pool of threads. The size of the pool is set by config.postMakeThreads
     '''
     lanes = config.get("Options", "lanes")
-    if lanes != "": 
+    if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
-    projectDirs = glob.glob("%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
+    #print("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
+    projectDirs = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
+    #print("projectDirs before toDirs: {}".format(projectDirs))
     projectDirs = toDirs(projectDirs)
-    sampleFiles = glob.glob("%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+    sampleFiles = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+    #print("projectDirs after toDirs {}".format(projectDirs))
+    #print("sampleFiles")
+    #print(sampleFiles)
+
     global localConfig
     localConfig = config
 
     #Deduplicate if this is a HiSeq 3000 run
     if config.get("Options", "runID")[7] == "J":
-        sampleDirs = glob.glob("%s/%s%s/Project_*/*/*_R1.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+        sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
         sampleDirs = [os.path.dirname(x) for x in sampleDirs]
         p = mp.Pool(int(config.get("Options", "deduplicateInstances")))
         p.map(clumpify_worker, sampleDirs)
@@ -329,8 +357,13 @@ def postMakeSteps(config) :
         p.join()
     #Different deduplication for NextSeq samples
     elif config.get("Options", "runID")[7:9] == "NB":
-        sampleDirs = glob.glob("%s/%s%s/Project_*/*/*_R1.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
-        sampleDirs = [os.path.dirname(x) for x in sampleDirs]
+        sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+        #print("%s/%s%s/Project_*/*_R1*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+        #sampleDirs = [os.path.dirname(x) for x in sampleDirs]
+        sampleDirs = set([os.path.dirname(x) for x in sampleDirs])
+        print("SampleDirs")
+        print(sampleDirs)
+
         p = mp.Pool(int(config.get("Options", "deduplicateInstances")))
         p.map(clumpifyNextSeq_worker, sampleDirs)
         p.close()
@@ -340,6 +373,9 @@ def postMakeSteps(config) :
     sampleFiles = [x for x in sampleFiles if "optical_duplicates" not in x]
 
     #FastQC
+
+    #print("Executing: fastQC")
+    #print(sampleFiles)
     p = mp.Pool(int(config.get("Options","postMakeThreads")))
     p.map(FastQC_worker, sampleFiles)
     p.close()
@@ -352,25 +388,33 @@ def postMakeSteps(config) :
     p.join()
 
     #fastq_screen
+
+    #print("Executing fastq_screen")
+
     p = mp.Pool(int(config.get("Options", "postMakeThreads")))
     p.map(fastq_screen_worker, sampleFiles)
     p.close()
     p.join()
 
     # multiqc
+
     p = mp.Pool(int(config.get("Options","postMakeThreads")))
     p.map(multiqc_worker, projectDirs)
     p.close()
     p.join()
+    #print("Multiqc DONE")
 
     #disk usage
+    #print("Disk usage")
     (tot,used,free) = shutil.disk_usage(config.get("Paths","outputDir"))
     tot /= 1024*1024*1024 #Convert to gigs
     used /= 1024*1024*1024
     free /= 1024*1024*1024
 
     #Undetermined indices
+    #print("Parse Demultiplex")
     undeter = parserDemultiplexStats(config)
+    #print("Parse Demultiplex DONE")
 
     message = "Current free space: %i of %i gigs (%5.2f%%)\n" % (
         free,tot,100*free/tot)
