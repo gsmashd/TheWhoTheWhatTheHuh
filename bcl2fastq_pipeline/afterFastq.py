@@ -115,14 +115,8 @@ def fastq_screen_worker(fname) :
     subprocess.check_call(cmd, shell=True)
 
     #Unlink/rename
-    #os.unlink(ofile)
+    os.unlink(ofile)
     os.rename(ofile.replace(".fastq","_screen.png"), fname.replace("_R1_001.fastq.gz", "_R1_001_screen.png"))
-
-    #print("Ofile {}".format(ofile))
-    #print("Fname {}".format(fname))
-
-    #Create the images
-    #plotFastqScreen(fname.replace("_R1_001.fastq.gz", "subsampled_screen.txt"))
 
 def FastQC_worker(fname) :
     #print("Hello from fastqc")
@@ -159,9 +153,6 @@ def FastQC_worker(fname) :
           projectName,
           libName), exist_ok=True)
 
-    #print(cmd)
-    #print("makedir")
-    #print("%s/%s%s/FASTQC_%s/%s" % (config.get("Paths","outputDir"),config.get("Options","runID"),lanes,projectName,libName))
     syslog.syslog("[FastQC_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
@@ -187,14 +178,10 @@ def multiqc_worker(d) :
     config = localConfig
     oldWd = os.getcwd()
     os.chdir(d)
-    #print("d = {}".format(d))
     dname = d.split("/")
     dname[-1] = "FASTQC_{}".format(dname[-1])
-    #dname = "/".join(dname)
     dname = os.path.join(d,dname[-1])
-    #print("dname = {}".format(dname))
     cmd = "{} {} {}/*/*.zip {}/Project_*/*".format(config.get("MultiQC", "multiqc_command"), config.get("MultiQC", "multiqc_options"), dname, d)
-    #print("MultiQC cmd {}".format(cmd))
     syslog.syslog("[multiqc_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
@@ -236,7 +223,6 @@ def clumpify_worker(d):
     os.chdir(oldWd)
 
 def clumpifyNextSeq_worker(d):
-    print("Hello from clumpify")
     global localConfig
     config = localConfig
     oldWd = os.getcwd()
@@ -266,11 +252,9 @@ def clumpifyNextSeq_worker(d):
                                                                                 config.get("bbmap", "clumpify_NextSeq_options"),
                                                                                 config.get("bbmap", "clumpify_threads"))
         syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
-        print("Clumpify cmd: {}".format(cmd))
         subprocess.check_call(cmd, shell=True)
         cmd = " ".join(["splitFastq", "temp.fq.gz", "{}".format(PE), r1[:-16], "{}".format(config.get("bbmap", "pigzThreads"))])
         syslog.syslog("[clumpify_worker] Splitting %s\n" % cmd)
-        print("Clumpify cmd: {}".format(cmd))
         subprocess.check_call(cmd, shell=True)
         os.remove("temp.fq.gz")
     os.chdir(oldWd)
@@ -335,18 +319,15 @@ def postMakeSteps(config) :
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
-    #print("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
     projectDirs = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
-    #print("projectDirs before toDirs: {}".format(projectDirs))
     projectDirs = toDirs(projectDirs)
     sampleFiles = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
-    #print("projectDirs after toDirs {}".format(projectDirs))
-    #print("sampleFiles")
-    #print(sampleFiles)
 
     global localConfig
     localConfig = config
 
+    # skip clumpify
+    """
     #Deduplicate if this is a HiSeq 3000 run
     if config.get("Options", "runID")[7] == "J":
         sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
@@ -368,6 +349,7 @@ def postMakeSteps(config) :
         p.map(clumpifyNextSeq_worker, sampleDirs)
         p.close()
         p.join()
+    """
 
     # Avoid running post-processing (in case of a previous error) on optical duplicate files.
     sampleFiles = [x for x in sampleFiles if "optical_duplicates" not in x]
