@@ -115,7 +115,7 @@ def fastq_screen_worker(fname) :
     subprocess.check_call(cmd, shell=True)
 
     #Unlink/rename
-    os.unlink(ofile)
+    #os.unlink(ofile)
     os.rename(ofile.replace(".fastq","_screen.png"), fname.replace("_R1_001.fastq.gz", "_R1_001_screen.png"))
 
 def FastQC_worker(fname) :
