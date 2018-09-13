@@ -327,29 +327,31 @@ def postMakeSteps(config) :
     localConfig = config
 
     # skip clumpify
-    """
+
     #Deduplicate if this is a HiSeq 3000 run
     if config.get("Options", "runID")[7] == "J":
         sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
         sampleDirs = [os.path.dirname(x) for x in sampleDirs]
+        """
         p = mp.Pool(int(config.get("Options", "deduplicateInstances")))
         p.map(clumpify_worker, sampleDirs)
         p.close()
         p.join()
+        """
     #Different deduplication for NextSeq samples
     elif config.get("Options", "runID")[7:9] == "NB":
         sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
         #print("%s/%s%s/Project_*/*_R1*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
         #sampleDirs = [os.path.dirname(x) for x in sampleDirs]
         sampleDirs = set([os.path.dirname(x) for x in sampleDirs])
-        print("SampleDirs")
-        print(sampleDirs)
-
+        #print("SampleDirs")
+        #print(sampleDirs)
+        """
         p = mp.Pool(int(config.get("Options", "deduplicateInstances")))
         p.map(clumpifyNextSeq_worker, sampleDirs)
         p.close()
         p.join()
-    """
+        """
 
     # Avoid running post-processing (in case of a previous error) on optical duplicate files.
     sampleFiles = [x for x in sampleFiles if "optical_duplicates" not in x]
