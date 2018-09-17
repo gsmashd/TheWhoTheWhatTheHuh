@@ -106,6 +106,8 @@ def reformatSS(rv):
     nLanes = 0
 
     for k, v in rv.items():
+        if k=='SingleCell':
+            continue
         ss.append("\n".join(v[0]))
         lanes = ""
         if len(v[1]) > 0:
@@ -116,7 +118,7 @@ def reformatSS(rv):
 
     if len(ss) < 2 and nLanes == 8:
         laneOut = None
-    return ss, laneOut, bcLens
+    return ss, laneOut, bcLens, rv.get('SingleCell', False)
 
 
 def parseSampleSheet(ss):
@@ -126,7 +128,7 @@ def parseSampleSheet(ss):
     return ss, laneOut, bcLens
     """
     rv = dict()
-
+    
     # If this is a NextSeq or a HiSeq 2500 rapid run, then don't store the incorrect Lane column
     storeLanes = True
     if getNumLanes(os.path.dirname(ss)) < 8:
@@ -143,6 +145,9 @@ def parseSampleSheet(ss):
     for line in f:
         bcLen = '0,0'
         if inData is False:
+            if line.startswith("Description,SingleCell"):
+                rv["SingleCell"]=True
+                continue
             if line.startswith("[Data]"):
                 inData = True
                 continue
@@ -203,7 +208,7 @@ def getSampleSheets(d):
     bcLens = []
     ssUse = []
     for sheet in ss:
-        ss_, laneOut_, bcLens_ = parseSampleSheet(sheet)
+        ss_, laneOut_, bcLens_, singleCell = parseSampleSheet(sheet)
         nSS = 0
         if ss_ is not None and len(ss_) > 0:
             ssUse.extend(ss_)
@@ -217,7 +222,7 @@ def getSampleSheets(d):
         elif nSS > 0:
             bcLens.extend([None] * nSS)
 
-    return ssUse, laneOut, bcLens
+    return ssUse, laneOut, bcLens, singleCell
 
 
 '''
@@ -243,7 +248,7 @@ def newFlowCell(config) :
         config.set('Options','runID',d.split("/")[-2])
         config.set('Options', 'sequencer',d.split("/")[-4])
 
-        sampleSheet, lanes, bcLens = getSampleSheets(os.path.dirname(d))
+        sampleSheet, lanes, bcLens, singleCell = getSampleSheets(os.path.dirname(d))
 
         for ss, lane, bcLen in zip(sampleSheet, lanes, bcLens):
             config.set('Options','runID',d.split("/")[-2])
@@ -272,12 +277,15 @@ def newFlowCell(config) :
                     o.close()
                     ss = "{}/SampleSheet.csv".format(odir)
                 config.set("Options","sampleSheet",ss)
+                config.set("Options","singleCell",singleCell)
                 return config
             else :
                 config.set("Options","runID","")
                 config.set("Options","sequencer","")
+                config.set("Options","singleCell","")
     config.set("Options","runID","")
     config.set("Options","sequencer","")
+    config.set("Options","singleCell","")
     return config
 
 
