@@ -277,7 +277,8 @@ def newFlowCell(config) :
                     o.close()
                     ss = "{}/SampleSheet.csv".format(odir)
                 config.set("Options","sampleSheet",ss)
-                config.set("Options","singleCell",singleCell)
+                singleCellConf = "1" if singleCell else "0"
+                config.set("Options","singleCell",singleCellConf)
                 return config
             else :
                 config.set("Options","runID","")
