@@ -174,20 +174,23 @@ def bcl2fq(config) :
     mask = ""
     if(rv is not None) :
         mask = rv
-    cmd = "%s %s %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s%s/InterOp" % (
-        config.get("bcl2fastq","bcl2fastq"),
-        config.get("bcl2fastq","bcl2fastq_options"),
-        mask,
-        config.get("Paths","outputDir"),
-        config.get("Options","runID"),
-        lanes,
-        config.get("Paths","baseDir"),
-        config.get("Options","sequencer"),
-        config.get("Options","runID"),
-        config.get("Paths","seqFacDir"),
-        config.get("Options","runID"),
-        lanes
-    )
+    if config.get("options","singleCell") == "1":
+        print("SINGLE CELL")
+    else:
+        cmd = "%s %s %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s%s/InterOp" % (
+            config.get("bcl2fastq","bcl2fastq"),
+            config.get("bcl2fastq","bcl2fastq_options"),
+            mask,
+            config.get("Paths","outputDir"),
+            config.get("Options","runID"),
+            lanes,
+            config.get("Paths","baseDir"),
+            config.get("Options","sequencer"),
+            config.get("Options","runID"),
+            config.get("Paths","seqFacDir"),
+            config.get("Options","runID"),
+            lanes
+        )
     syslog.syslog("[bcl2fq] Running: %s\n" % cmd)
     logOut = open("%s/%s%s.stdout" % (config.get("Paths","logDir"), config.get("Options","runID"), lanes), "w")
     logErr = open("%s/%s%s.stderr" % (config.get("Paths","logDir"), config.get("Options","runID"), lanes), "w")
