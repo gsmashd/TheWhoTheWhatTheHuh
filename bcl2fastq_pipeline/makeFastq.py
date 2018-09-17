@@ -176,7 +176,7 @@ def bcl2fq(config) :
         mask = rv
     if config.get("Options","singleCell") == "1":
         print("SINGLE CELL")
-        cmd = "cellranger mkfastq --output-dir={output_dir} --sample-sheet={sample_sheet} --run={run_dir} --qc".format(
+        cmd = "cellranger mkfastq --output-dir={output_dir} --sample-sheet={sample_sheet} --run={run_dir} --qc --jobmode=local --localcores=6 --localmem=70".format(
                 output_dir = "{}/{}".format(
                     config.get("Paths","outputDir"),
                     config.get("Options","runID")
