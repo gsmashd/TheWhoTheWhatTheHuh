@@ -174,7 +174,7 @@ def bcl2fq(config) :
     mask = ""
     if(rv is not None) :
         mask = rv
-    if config.get("options","singleCell") == "1":
+    if config.get("Options","singleCell") == "1":
         print("SINGLE CELL")
     else:
         cmd = "%s %s %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s%s/InterOp" % (
