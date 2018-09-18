@@ -122,6 +122,9 @@ def rewriteSampleSheet(config) :
         return None
 
 def fixNames(config) :
+    """
+    Remove this to get rid of Project_* and Sample_* prefixes
+    """
     lanes = config.get("Options", "lanes")
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
