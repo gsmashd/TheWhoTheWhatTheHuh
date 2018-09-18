@@ -319,13 +319,11 @@ def postMakeSteps(config) :
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
-    projectDirs = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes),
-            "%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)
-            )
+    projectDirs = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
+    projectDirs.extend(glob.glob("%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
     projectDirs = toDirs(projectDirs)
-    sampleFiles = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes),
-            "%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)
-            )
+    sampleFiles = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+    sampleFiles.extend(glob.glob("%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
 
     global localConfig
     localConfig = config
