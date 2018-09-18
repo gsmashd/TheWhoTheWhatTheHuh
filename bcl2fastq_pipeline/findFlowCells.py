@@ -273,6 +273,8 @@ def newFlowCell(config) :
                     os.makedirs(odir)
                 if ss is not None and not os.path.exists("{}/SampleSheet.csv".format(odir)):
                     o = open("{}/SampleSheet.csv".format(odir), "w")
+                    if singleCell:
+                        ss = '[Header]\nSingleCell\n{}'.format(ss)
                     o.write(ss)
                     o.close()
                     ss = "{}/SampleSheet.csv".format(odir)
