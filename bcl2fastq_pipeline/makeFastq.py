@@ -178,8 +178,8 @@ def bcl2fq(config) :
     if(rv is not None) :
         mask = rv
     if config.get("Options","singleCell") == "1":
-        print("SINGLE CELL")
-        cmd = "cellranger mkfastq --output-dir={output_dir} --sample-sheet={sample_sheet} --run={run_dir} --qc --jobmode=local --localcores=6 --localmem=18".format(
+        cmd = "{cellranger_cmd} --output-dir={output_dir} --sample-sheet={sample_sheet} --run={run_dir} {cellranger_options}".format(
+                cellranger_cmd = config.get("cellranger","cellranger_mkfastq"),
                 output_dir = "{}/{}".format(
                     config.get("Paths","outputDir"),
                     config.get("Options","runID")
@@ -189,7 +189,8 @@ def bcl2fq(config) :
                     config.get("Paths","baseDir"),
                     config.get("Options","sequencer"),
                     config.get("Options","runID")
-                    )
+                    ),
+                cellranger_options = config.get("cellranger","cellranger_mkfastq_options")
                 )
     else:
         cmd = "%s %s %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s%s/InterOp" % (

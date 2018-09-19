@@ -93,11 +93,13 @@ def fastq_screen_worker(fname) :
     #Subsample
     ofile=fname.replace("_R1_001.fastq.gz","subsampled.fastq")
     #print("ofile: {}".format(ofile))
+    wc = subprocess.check_output("zcat {} | wc -l ".format(fname), shell=True)
+    seqtk_size = int(int(wc)*int(config.get("fastq_screen","seqtk_fraction")))
     cmd = "%s sample %s %s %s" % (
         config.get("fastq_screen","seqtk_command"),
         config.get("fastq_screen","seqtk_options"),
         fname,
-        config.get("fastq_screen","seqtk_size"))
+        seqtk_size)
     #print("SEQTK COMMAND: {}".format(cmd))
     syslog.syslog("[fastq_screen_worker] Running %s\n" % cmd)
     o = open(ofile, "w")
@@ -322,8 +324,8 @@ def postMakeSteps(config) :
     projectDirs = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
     projectDirs.extend(glob.glob("%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
     projectDirs = toDirs(projectDirs)
-    sampleFiles = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
-    sampleFiles.extend(glob.glob("%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
+    sampleFiles = glob.glob("%s/%s%s/Project_*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+    sampleFiles.extend(glob.glob("%s/%s%s/Project_*/*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
 
     global localConfig
     localConfig = config
