@@ -91,7 +91,7 @@ def fastq_screen_worker(fname) :
         return
 
     #Subsample
-    ofile=fname.replace("_R1_001.fastq.gz","subsampled.fastq")
+    ofile=fname.replace(".fastq.gz","subsampled.fastq")
     #print("ofile: {}".format(ofile))
     wc = subprocess.check_output("zcat {} | wc -l ".format(fname), shell=True)
     seqtk_size = int(int(wc)*float(config.get("fastq_screen","seqtk_fraction")))
@@ -118,7 +118,7 @@ def fastq_screen_worker(fname) :
 
     #Unlink/rename
     #os.unlink(ofile)
-    os.rename(ofile.replace(".fastq","_screen.png"), fname.replace("_R1_001.fastq.gz", "_R1_001_screen.png"))
+    #os.rename(ofile.replace(".fastq","_screen.png"), fname.replace("_R1_001.fastq.gz", "_R1_001_screen.png"))
 
 def FastQC_worker(fname) :
     #print("Hello from fastqc")
@@ -321,27 +321,28 @@ def postMakeSteps(config) :
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
-    projectDirs = glob.glob("%s/%s%s/Project_*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
-    projectDirs.extend(glob.glob("%s/%s%s/Project_*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
+    projectDirs = glob.glob("%s/%s%s/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
+    projectDirs.extend(glob.glob("%s/%s%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
     projectDirs = toDirs(projectDirs)
-    sampleFiles = glob.glob("%s/%s%s/Project_*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
-    sampleFiles.extend(glob.glob("%s/%s%s/Project_*/*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
+    sampleFiles = glob.glob("%s/%s%s/*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+    sampleFiles.extend(glob.glob("%s/%s%s/_*/*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
+    sampleFiles.extend(glob.glob("%s/%s%s/*/*/*R[12]_001.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
 
     global localConfig
     localConfig = config
 
     # skip clumpify
-
+    """
     #Deduplicate if this is a HiSeq 3000 run
     if config.get("Options", "runID")[7] == "J":
         sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
         sampleDirs = [os.path.dirname(x) for x in sampleDirs]
-        """
+        
         p = mp.Pool(int(config.get("Options", "deduplicateInstances")))
         p.map(clumpify_worker, sampleDirs)
         p.close()
         p.join()
-        """
+        
     #Different deduplication for NextSeq samples
     elif config.get("Options", "runID")[7:9] == "NB":
         sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
@@ -350,7 +351,7 @@ def postMakeSteps(config) :
         sampleDirs = set([os.path.dirname(x) for x in sampleDirs])
         #print("SampleDirs")
         #print(sampleDirs)
-        """
+        
         p = mp.Pool(int(config.get("Options", "deduplicateInstances")))
         p.map(clumpifyNextSeq_worker, sampleDirs)
         p.close()

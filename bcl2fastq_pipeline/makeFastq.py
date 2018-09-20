@@ -125,6 +125,7 @@ def fixNames(config) :
     """
     Remove this to get rid of Project_* and Sample_* prefixes
     """
+    """
     lanes = config.get("Options", "lanes")
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
@@ -136,7 +137,8 @@ def fixNames(config) :
         fnew = re.sub(r"_S[0-9]+_R([12])$",r'_R\1', fnew) + ".fastq.gz"
         syslog.syslog("Moving %s to %s\n" % (fname, fnew))
         shutil.move(fname, fnew)
-
+    """
+    """
     snames = glob.glob("%s/%s%s/*/*" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
     for sname in snames :
         if sname.split("/")[-2] in ["Reports", "Stats"]:
@@ -145,7 +147,8 @@ def fixNames(config) :
         snew = "%s/Sample_%s" % (sname[:idx], sname[idx+1:])
         syslog.syslog("Moving %s to %s\n" % (sname, snew))
         shutil.move(sname, snew)
-
+    """
+    """
     pnames = glob.glob("%s/%s%s/*" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
     for pname in pnames :
         if pname.split("/")[-1] in ["Reports", "Stats"]:
@@ -156,6 +159,7 @@ def fixNames(config) :
         pnew = "%s/Project_%s" % (pname[:idx], pname[idx+1:])
         syslog.syslog("Moving %s to %s\n" % (pname, pnew))
         shutil.move(pname, pnew)
+   """
 
 def bcl2fq(config) :
     '''
