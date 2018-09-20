@@ -269,7 +269,7 @@ def MakeTotalPDF(config) :
     txt = "\nProject\tSample\tconfident off-species reads/sample\t% Optical Duplicates\n"
     elements = []
 
-    projs = glob.glob("%s/%s%s/Project_*" % (
+    projs = glob.glob("%s/%s%s/GCF*" % (
         config.get("Paths","outputDir"),
         config.get("Options","runID"),
         lanes))
@@ -278,7 +278,7 @@ def MakeTotalPDF(config) :
     #Make the table
     for proj in projs :
         pname=proj.split("/")[-1]
-        txts = glob.glob("%s/Sample_*/*_screen.txt" % proj)
+        txts = glob.glob("%s/*/*_screen.txt" % proj)
         txts.sort()
         for i in range(len(txts)) :
             # Get the percent optical duplication
@@ -303,7 +303,7 @@ def MakeTotalPDF(config) :
     for proj in projs :
         pname=proj.split("/")[-1]
         elements.append(Paragraph(pname, stylesheet['title']))
-        imgs = glob.glob("%s/Sample_*/*.png" % proj)
+        imgs = glob.glob("%s/*/*.png" % proj)
         imgs.sort()
         for i in range(len(imgs)) :
             TmpImg = utils.ImageReader(imgs[i])
