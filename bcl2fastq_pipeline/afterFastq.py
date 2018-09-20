@@ -94,7 +94,10 @@ def fastq_screen_worker(fname) :
     ofile=fname.replace(".fastq.gz","subsampled.fastq")
     #print("ofile: {}".format(ofile))
     wc = subprocess.check_output("zcat {} | wc -l ".format(fname), shell=True)
-    seqtk_size = int(int(wc)*float(config.get("fastq_screen","seqtk_fraction")))
+    #seqtk_size = int(int(wc)*float(config.get("fastq_screen","seqtk_fraction")))
+    seqtk_size = min(int(int(wc)/4),int(config.get("fastq_screen","seqtk_size")))
+  
+
     cmd = "%s sample %s %s %s" % (
         config.get("fastq_screen","seqtk_command"),
         config.get("fastq_screen","seqtk_options"),
