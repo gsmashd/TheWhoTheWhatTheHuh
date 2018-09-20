@@ -183,7 +183,7 @@ def multiqc_worker(d) :
     dname = d.split("/")
     dname[-1] = "FASTQC_{}".format(dname[-1])
     dname = os.path.join(d,dname[-1])
-    cmd = "{} {} {}/*/*.zip {}/Project_*/*".format(config.get("MultiQC", "multiqc_command"), config.get("MultiQC", "multiqc_options"), dname, d)
+    cmd = "{} {} {}/*/*.zip {}/GCF*/*".format(config.get("MultiQC", "multiqc_command"), config.get("MultiQC", "multiqc_options"), dname, d)
     syslog.syslog("[multiqc_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
