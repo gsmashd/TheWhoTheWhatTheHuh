@@ -33,47 +33,6 @@ def bgzip_worker(fname) :
     syslog.syslog("[bgzip_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
-def plotFastqScreen(fname) :
-    species=[]
-    ohol=[]
-    mhol=[]
-    ohml=[]
-    mhml=[]
-    for line in csv.reader(open(fname, "r"), dialect="excel-tab") :
-        if(len(line) == 0) :
-            break
-        if(line[0].startswith("#")) :
-            continue
-        if(line[0].startswith("Library")) :
-            continue
-        if(line[0].startswith("Genome")) :
-            continue
-        species.append(line[0])
-        ohol.append(float(line[5]))
-        mhol.append(float(line[7]))
-        ohml.append(float(line[9]))
-        mhml.append(float(line[11]))
-
-    ohol = np.array(ohol)
-    mhol = np.array(mhol)
-    ohml = np.array(ohml)
-    mhml = np.array(mhml)
-
-    ind = np.arange(len(species))
-    p1 = plt.bar(ind, tuple(ohol), color="#0000FF")
-    p2 = plt.bar(ind, tuple(mhol), color="#6699FF", bottom=tuple(ohol))
-    p3 = plt.bar(ind, tuple(ohml), color="#FF0000", bottom=tuple(ohol+mhol))
-    p4 = plt.bar(ind, tuple(mhml), color="#FF6699", bottom=tuple(ohol+mhol+ohml))
-
-    plt.title("%s" % fname.replace("_R1_001_screen.txt","").split("/")[-1])
-    plt.ylabel("%")
-    plt.ylim((0,105))
-    plt.xticks(ind, species, rotation="vertical")
-    plt.yticks(np.arange(0,110,10))
-    plt.legend((p4[0], p3[0], p2[0], p1[0]), ("repeat", "conserved", "multimap", "unique"))
-    plt.tight_layout()
-    plt.savefig("%s.png" % fname.replace("_screen.txt","_screen"))
-    plt.close()
 
 def fastq_screen_worker(fname) :
     global localConfig
@@ -92,9 +51,7 @@ def fastq_screen_worker(fname) :
 
     #Subsample
     ofile=fname.replace(".fastq.gz","subsampled.fastq")
-    #print("ofile: {}".format(ofile))
     wc = subprocess.check_output("zcat {} | wc -l ".format(fname), shell=True)
-    #seqtk_size = int(int(wc)*float(config.get("fastq_screen","seqtk_fraction")))
     seqtk_size = min(int(int(wc)/4),int(config.get("fastq_screen","seqtk_size")))
   
 
@@ -103,7 +60,6 @@ def fastq_screen_worker(fname) :
         config.get("fastq_screen","seqtk_options"),
         fname,
         seqtk_size)
-    #print("SEQTK COMMAND: {}".format(cmd))
     syslog.syslog("[fastq_screen_worker] Running %s\n" % cmd)
     o = open(ofile, "w")
     subprocess.check_call(cmd, shell=True, stdout=o)
@@ -115,7 +71,6 @@ def fastq_screen_worker(fname) :
         config.get("fastq_screen", "fastq_screen_options"),
         os.path.dirname(ofile),
         ofile)
-    #print("FASTQ_SCREEN COMMAND: {}".format(cmd))
     syslog.syslog("[fastq_screen_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
@@ -366,8 +321,6 @@ def postMakeSteps(config) :
 
     #FastQC
 
-    #print("Executing: fastQC")
-    #print(sampleFiles)
     p = mp.Pool(int(config.get("Options","postMakeThreads")))
     p.map(FastQC_worker, sampleFiles)
     p.close()
@@ -380,33 +333,25 @@ def postMakeSteps(config) :
     p.join()
 
     #fastq_screen
-
-    #print("Executing fastq_screen")
-
     p = mp.Pool(int(config.get("Options", "postMakeThreads")))
     p.map(fastq_screen_worker, sampleFiles)
     p.close()
     p.join()
 
     # multiqc
-
     p = mp.Pool(int(config.get("Options","postMakeThreads")))
     p.map(multiqc_worker, projectDirs)
     p.close()
     p.join()
-    #print("Multiqc DONE")
 
     #disk usage
-    #print("Disk usage")
     (tot,used,free) = shutil.disk_usage(config.get("Paths","outputDir"))
     tot /= 1024*1024*1024 #Convert to gigs
     used /= 1024*1024*1024
     free /= 1024*1024*1024
 
     #Undetermined indices
-    #print("Parse Demultiplex")
     undeter = parserDemultiplexStats(config)
-    #print("Parse Demultiplex DONE")
 
     message = "Current free space: %i of %i gigs (%5.2f%%)\n" % (
         free,tot,100*free/tot)
