@@ -133,7 +133,6 @@ def bcl2fq(config) :
 
     #Make the output directories
     os.makedirs("%s/%s%s" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes), exist_ok=True)
-    os.makedirs("%s/%s%s/InterOp" % (config.get("Paths","seqFacDir"), config.get("Options","runID"), lanes), exist_ok=True)
     #Make log directory
     os.makedirs("%s" % (os.path.join(config.get("Paths","logDir"),os.path.dirname(config.get("Options","runID")))), exist_ok=True)
 
@@ -158,7 +157,7 @@ def bcl2fq(config) :
                 cellranger_options = config.get("cellranger","cellranger_mkfastq_options")
                 )
     else:
-        cmd = "%s %s %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s%s/InterOp" % (
+        cmd = "%s %s %s -o %s/%s%s -R %s/%s/data/%s " % (
             config.get("bcl2fastq","bcl2fastq"),
             config.get("bcl2fastq","bcl2fastq_options"),
             mask,
@@ -168,9 +167,6 @@ def bcl2fq(config) :
             config.get("Paths","baseDir"),
             config.get("Options","sequencer"),
             config.get("Options","runID"),
-            config.get("Paths","seqFacDir"),
-            config.get("Options","runID"),
-            lanes
         )
     syslog.syslog("[bcl2fq] Running: %s\n" % cmd)
     logOut = open("%s/%s%s.stdout" % (config.get("Paths","logDir"), config.get("Options","runID"), lanes), "w")
