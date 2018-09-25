@@ -41,16 +41,19 @@ def fastq_screen_worker(fname) :
     os.chdir(os.path.dirname(fname))
 
     #Skip read #2
-    bname = fname.split("/")[-1]
-    if(bname[-12:] == "_R2.fastq.gz") :
+    if "R2.fastq" in fname or "R2_001.fastq" in fname:
         return
 
-    #If the image is already there, then skip
-    if os.path.exists("{}_screen.png".format(fname[:-9])) and os.path.exists("{}subsampled_screen.txt".format(fname[:-16])):
-        return
+    ofile="{}/fastq_screen/{}".format(
+            os.path.dirname(fname),
+            os.path.basename(fname).replace(".fastq.gz","_subsampled.fastq")
+            )
 
-    #Subsample
-    ofile=fname.replace(".fastq.gz","subsampled.fastq")
+    if os.path.exists(ofile.replace(".fastq","_screen.html")):
+        return
+    
+    os.makedirs(os.path.dirname(ofile), exist_ok=True)
+    
     wc = subprocess.check_output("zcat {} | wc -l ".format(fname), shell=True)
     seqtk_size = min(int(int(wc)/4),int(config.get("fastq_screen","seqtk_size")))
   
