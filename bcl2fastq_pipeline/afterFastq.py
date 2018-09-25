@@ -78,8 +78,35 @@ def fastq_screen_worker(fname) :
     #os.unlink(ofile)
     #os.rename(ofile.replace(".fastq","_screen.png"), fname.replace("_R1_001.fastq.gz", "_R1_001_screen.png"))
 
+
+def suprDUPr_worker(fname) :
+    global localConfig
+    config = localConfig
+
+    if config.get("Options","singleCell") == "1":
+        return
+
+    ofname = "{}/filtered/{}".format(os.path.dirname(fname),os.path.basename(fname).replace(".fastq.gz","_filtered.fastq.gz"))
+
+    # WHEN ./filterfq is working cmd will be 
+    #  "{cmd} {opts} {infile} | filterfq {infile} | tee {ofile}"
+    cmd = "{cmd} {opts} {infile} | tee {ofile}".format(
+          cmd = config.get("suprDUPr","suprdupr_command"),
+          opts = config.get("suprDUPr","suprdupr_options"),
+          infile = fname,
+          ofile = ofname
+          )
+
+    # Skip if the output exists
+    if os.path.exists(ofname)
+        return
+
+    os.makedirs(os.path.dirname(ofname), exist_ok=True)
+
+    syslog.syslog("[suprDUPr_worker] Running %s\n" % cmd)
+    subprocess.check_call(cmd, shell=True)
+
 def FastQC_worker(fname) :
-    #print("Hello from fastqc")
     global localConfig
     config = localConfig
     lanes = config.get("Options", "lanes")
@@ -317,7 +344,15 @@ def postMakeSteps(config) :
         """
 
     # Avoid running post-processing (in case of a previous error) on optical duplicate files.
-    sampleFiles = [x for x in sampleFiles if "optical_duplicates" not in x]
+    #sampleFiles = [x for x in sampleFiles if "optical_duplicates" not in x]
+
+
+    #suprDUPr
+
+    p = mp.Pool(int(config.get("Options","postMakeThreads")))
+    p.map(suprDUPr_worker, sampleFiles)
+    p.close()
+    p.join()
 
     #FastQC
 
