@@ -40,8 +40,10 @@ def fastq_screen_worker(fname) :
 
     os.chdir(os.path.dirname(fname))
 
-    #Skip read #2
-    if "R2.fastq" in fname or "R2_001.fastq" in fname:
+    #Skip read 2 when not single cell, skip if read 1 when single cell
+    if config.get("Options","singleCell") == '0' and ("R2.fastq" in fname or "R2_001.fastq" in fname):
+        return
+    elif config.get("Options","singleCell") == '1' and ("R1.fastq" in fname or "R1_001.fastq" in fname):
         return
 
     ofile="{}/fastq_screen/{}".format(
