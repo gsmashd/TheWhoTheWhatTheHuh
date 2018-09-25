@@ -48,34 +48,20 @@ def fastq_screen_worker(fname) :
 
     ofile="{}/fastq_screen/{}".format(
             os.path.dirname(fname),
-            os.path.basename(fname).replace(".fastq.gz","_subsampled.fastq")
+            os.path.basename(fname)
             )
 
-    if os.path.exists(ofile.replace(".fastq","_screen.html")):
+    if os.path.exists(ofile.replace(".fastq.gz","_screen.html")):
         return
     
     os.makedirs(os.path.dirname(ofile), exist_ok=True)
     
-    wc = subprocess.check_output("zcat {} | wc -l ".format(fname), shell=True)
-    seqtk_size = min(int(int(wc)/4),int(config.get("fastq_screen","seqtk_size")))
-  
-
-    cmd = "%s sample %s %s %s" % (
-        config.get("fastq_screen","seqtk_command"),
-        config.get("fastq_screen","seqtk_options"),
-        fname,
-        seqtk_size)
-    syslog.syslog("[fastq_screen_worker] Running %s\n" % cmd)
-    o = open(ofile, "w")
-    subprocess.check_call(cmd, shell=True, stdout=o)
-    o.close()
-
     #fastq_screen
     cmd = "%s %s --outdir '%s' '%s'" % (
         config.get("fastq_screen", "fastq_screen_command"),
         config.get("fastq_screen", "fastq_screen_options"),
         os.path.dirname(ofile),
-        ofile)
+        fname)
     syslog.syslog("[fastq_screen_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
