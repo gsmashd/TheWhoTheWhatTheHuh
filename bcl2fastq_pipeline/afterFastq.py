@@ -98,7 +98,7 @@ def suprDUPr_worker(fname) :
           )
 
     # Skip if the output exists
-    if os.path.exists(ofname)
+    if os.path.exists(ofname):
         return
 
     os.makedirs(os.path.dirname(ofname), exist_ok=True)
