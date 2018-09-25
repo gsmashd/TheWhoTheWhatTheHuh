@@ -166,78 +166,6 @@ def multiqc_worker(d) :
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
 
-def clumpify_worker(d):
-    global localConfig
-    config = localConfig
-    oldWd = os.getcwd()
-    os.chdir(d)
-
-    read1s = glob.glob("*_R1_001.fastq.gz")
-    PE = 1
-    for r1 in read1s:
-        # This takes a while, don't duplicate work
-        if os.path.exists("{}.duplicate.txt".format(r1[:-12])):
-            os.chdir(oldWd)
-            return
-
-        r2 = "{}_R2.fastq.gz".format(r1[:-12])
-        if os.path.exists(r2):
-            cmd = "{} in={} in2={} out=temp.fq.gz {} dupedist={} threads={}".format(config.get("bbmap", "clumpify_command"),
-                                                                                    r1, r2,
-                                                                                    config.get("bbmap", "clumpify_options"),
-                                                                                    config.get("bbmap", "clumpify_HiSeq3000_dist"),
-                                                                                    config.get("bbmap", "clumpify_threads"))
-        else:
-            PE = 0
-            cmd = "{} in={} out=temp.fq.gz {} dupedist={} threads={}".format(config.get("bbmap", "clumpify_command"),
-                                                                             r1,
-                                                                             config.get("bbmap", "clumpify_options"),
-                                                                             config.get("bbmap", "clumpify_HiSeq3000_dist"),
-                                                                             config.get("bbmap", "clumpify_threads"))
-        syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
-        subprocess.check_call(cmd, shell=True)
-        cmd = " ".join(["splitFastq", "temp.fq.gz", "{}".format(PE), r1[:-12], "{}".format(config.get("bbmap", "pigzThreads"))])
-        syslog.syslog("[clumpify_worker] Splitting %s\n" % cmd)
-        subprocess.check_call(cmd, shell=True)
-        os.remove("temp.fq.gz")
-    os.chdir(oldWd)
-
-def clumpifyNextSeq_worker(d):
-    global localConfig
-    config = localConfig
-    oldWd = os.getcwd()
-    os.chdir(d)
-
-    read1s = glob.glob("*_R1_001.fastq.gz")
-    PE = 1
-    for r1 in read1s:
-        # This takes a while, don't duplicate work
-        if os.path.exists("{}.duplicate.txt".format(r1[:-12])):
-            os.chdir(oldWd)
-            return
-
-        r2 = "{}_R2.fastq.gz".format(r1[:-12])
-        if os.path.exists(r2):
-            cmd = "{} in={} in2={} out=temp.fq.gz {} {} dupedist={} threads={}".format(config.get("bbmap", "clumpify_command"),
-                                                                                       r1, r2,
-                                                                                       config.get("bbmap", "clumpify_options"),
-                                                                                       config.get("bbmap", "clumpify_NextSeq_options"),
-                                                                                       config.get("bbmap", "clumpify_NextSeq_dist"),
-                                                                                       config.get("bbmap", "clumpify_threads"))
-        else:
-            PE = 0
-            cmd = "{} in={} out=temp.fq.gz {} {} threads={}".format(config.get("bbmap", "clumpify_command"),
-                                                                                r1,
-                                                                                config.get("bbmap", "clumpify_options"),
-                                                                                config.get("bbmap", "clumpify_NextSeq_options"),
-                                                                                config.get("bbmap", "clumpify_threads"))
-        syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
-        subprocess.check_call(cmd, shell=True)
-        cmd = " ".join(["splitFastq", "temp.fq.gz", "{}".format(PE), r1[:-16], "{}".format(config.get("bbmap", "pigzThreads"))])
-        syslog.syslog("[clumpify_worker] Splitting %s\n" % cmd)
-        subprocess.check_call(cmd, shell=True)
-        os.remove("temp.fq.gz")
-    os.chdir(oldWd)
 
 def parserDemultiplexStats(config) :
     '''
@@ -308,33 +236,6 @@ def postMakeSteps(config) :
 
     global localConfig
     localConfig = config
-
-    # skip clumpify
-    """
-    #Deduplicate if this is a HiSeq 3000 run
-    if config.get("Options", "runID")[7] == "J":
-        sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
-        sampleDirs = [os.path.dirname(x) for x in sampleDirs]
-        
-        p = mp.Pool(int(config.get("Options", "deduplicateInstances")))
-        p.map(clumpify_worker, sampleDirs)
-        p.close()
-        p.join()
-        
-    #Different deduplication for NextSeq samples
-    elif config.get("Options", "runID")[7:9] == "NB":
-        sampleDirs = glob.glob("%s/%s%s/Project_*/*_R1*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
-        #print("%s/%s%s/Project_*/*_R1*.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
-        #sampleDirs = [os.path.dirname(x) for x in sampleDirs]
-        sampleDirs = set([os.path.dirname(x) for x in sampleDirs])
-        #print("SampleDirs")
-        #print(sampleDirs)
-        
-        p = mp.Pool(int(config.get("Options", "deduplicateInstances")))
-        p.map(clumpifyNextSeq_worker, sampleDirs)
-        p.close()
-        p.join()
-        """
 
     # Avoid running post-processing (in case of a previous error) on optical duplicate files.
     #sampleFiles = [x for x in sampleFiles if "optical_duplicates" not in x]
