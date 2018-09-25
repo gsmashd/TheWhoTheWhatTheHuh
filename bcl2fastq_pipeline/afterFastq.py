@@ -93,7 +93,7 @@ def suprDUPr_worker(fname) :
 
     # WHEN ./filterfq is working cmd will be 
     #  "{cmd} {opts} {infile} | filterfq {infile} | tee {ofile}"
-    cmd = "{cmd} {opts} {infile} | tee {ofile}".format(
+    cmd = "{cmd} {opts} {infile} > {ofile}".format(
           cmd = config.get("suprDUPr","suprdupr_command"),
           opts = config.get("suprDUPr","suprdupr_options"),
           infile = fname,
