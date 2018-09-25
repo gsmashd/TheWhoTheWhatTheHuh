@@ -146,6 +146,8 @@ def md5sum_worker(d) :
     config = localConfig
     oldWd = os.getcwd()
     os.chdir(d)
+    if os.path.exists("mdsums.txt"):
+        return
     cmd = "md5sum */*.fastq.gz > md5sums.txt"
     syslog.syslog("[md5sum_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
