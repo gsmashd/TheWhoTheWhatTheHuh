@@ -17,6 +17,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as img
+import yaml
 
 '''
 Do we really need the md5sum?
@@ -159,9 +160,29 @@ def multiqc_worker(d) :
     oldWd = os.getcwd()
     os.chdir(d)
     dname = d.split("/")
+
+    conf_name = ".multiqc_config.yaml"
+    in_conf = open("/root/multiqc_config.yaml","r")
+    out_conf = open(conf_name,"w+")
+    mqc_conf = yaml.load(in_conf)
+
+    mqc_conf['title'] = dname[-1]
+
+    yaml.dump(mqc_conf,out_conf)
+    in_conf.close()
+    out_conf.close()
+
+
+
     dname[-1] = "FASTQC_{}".format(dname[-1])
     dname = os.path.join(os.path.dirname(d),dname[-1])
-    cmd = "{} {} {}/*/*.zip {}/*/*".format(config.get("MultiQC", "multiqc_command"), config.get("MultiQC", "multiqc_options"), dname, d)
+    cmd = "{} {} --config {} {}/*/*.zip {}/*/*".format(
+            config.get("MultiQC", "multiqc_command"), 
+            config.get("MultiQC", "multiqc_options"), 
+            conf_name,
+            dname, 
+            d
+            )
     syslog.syslog("[multiqc_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
