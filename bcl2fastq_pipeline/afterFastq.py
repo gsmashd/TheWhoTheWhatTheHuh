@@ -25,7 +25,7 @@ Do we really need the md5sum?
 
 localConfig = None
 
-EQUENCERS = {
+SEQUENCERS = {
         'NB501038' : 'NextSeq 500',
         'SN7001334' : 'HiSeq 2500',
         'K00251' : 'HiSeq 4000',
