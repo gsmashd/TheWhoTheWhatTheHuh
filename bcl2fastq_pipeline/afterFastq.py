@@ -18,7 +18,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 import yaml
-
+import json
 '''
 Do we really need the md5sum?
 '''
