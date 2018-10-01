@@ -160,7 +160,7 @@ def get_read_geometry(run_dir):
     R1 = None
     R2 = None
     for read in lane_info:
-        if read['IsIndexRead'] == True:
+        if read['IsIndexedRead'] == True:
             continue
         elif read['Number'] == 1:
             R1 = read['NumCycles']
