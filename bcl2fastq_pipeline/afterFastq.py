@@ -151,7 +151,7 @@ def toDirs(files) :
         s.add(d[:d.rfind('/')]) #We just want projects, not individual libraries
     return s
 
-def get_read_geomtry(run_dir):
+def get_read_geometry(run_dir):
     stats_file = open('{}/Stats/Stats.json'.format(run_dir),'r')
     stats_json = json.load(stats_file)
     lane_info = stats_json['ReadInfosForLanes'][0].get('ReadInfos', None)
