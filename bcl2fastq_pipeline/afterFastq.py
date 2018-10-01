@@ -25,6 +25,15 @@ Do we really need the md5sum?
 
 localConfig = None
 
+EQUENCERS = {
+        'NB501038' : 'NextSeq 500',
+        'SN7001334' : 'HiSeq 2500',
+        'K00251' : 'HiSeq 4000',
+        'M02675' : 'MiSeq NTNU',
+        'M03942' : 'MiSeq StOlav'
+        }
+
+
 def bgzip_worker(fname) :
     global localConfig
     config = localConfig
@@ -142,6 +151,31 @@ def toDirs(files) :
         s.add(d[:d.rfind('/')]) #We just want projects, not individual libraries
     return s
 
+def get_read_geomtry(run_dir):
+    stats_file = open('{}/Stats/Stats.json'.format(run_dir),'r')
+    stats_json = json.load(stats_file)
+    lane_info = stats_json['ReadInfosForLanes'][0].get('ReadInfos', None)
+    if not lane_info:
+        return 'Read geometry could not be automatically determined.'
+    R1 = None
+    R2 = None
+    for read in lane_info:
+        if read['IsIndexRead'] == True:
+            continue
+        elif read['Number'] == 1:
+            R1 = read['NumCycles']
+        elif read['Number'] == 2:
+            R2 = read['NumCycles']
+    if R1 and R2:
+        return 'R1: {}, R2: {}'.format(R1,R2)
+    elif R1 and not R2:
+        return 'R1: {}'.format(R1)
+    elif not R1 and not R2:
+        return 'Read geometry could not be automatically determined.'
+
+def get_sequencer(run_id):
+	return SEQUENCERS.get(run_id.split('_')[1],'Sequencer could not be automatically determined.')
+
 def md5sum_worker(d) :
     global localConfig
     config = localConfig
@@ -168,6 +202,18 @@ def multiqc_worker(d) :
 
     mqc_conf['title'] = dname[-1]
 
+    read_geometry = get_read_geometry(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+    contact = config.get('MultiQC','report_contact')
+    sequencer = get_sequencer(config.get('Options','runID'))
+
+    report_header = [
+    {'Contact E-mail': contact},
+    {'Sequencing Platform': sequencer},
+    {'Read Geometry': read_geometry}
+    ]
+    
+    mqc_conf['report_header_info'] = report_header
+    
     yaml.dump(mqc_conf,out_conf)
     in_conf.close()
     out_conf.close()
