@@ -43,6 +43,41 @@ def bgzip_worker(fname) :
     syslog.syslog("[bgzip_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
+def clumpify_worker(d):
+    global localConfig
+    config = localConfig
+
+    if config.get("Options","singleCell") == "1":
+        return
+
+    old_wd = os.getcwd()
+    os.chdir(d)
+
+    read1s = glob.glob("*_R1.fastq.gz")
+
+    for r1 in read1s:
+        r2 = r1.replace("R1.fastq.gz","R2.fastq.gz")
+        if os.path.exists(r2):
+            cmd = "{clump_cmd} {clump_opts} in1={in1} in2={in2} out1={out1} out2={out2} rcomp=f rename=f overwrite=true".format(
+                    clump_cmd = config.get("clumpify","clumpify_cmd"),
+                    clump_opts = config.get("clumpiy", "clumpify_opts"),
+                    in1 = r1,
+                    in2 = r2,
+                    out1 = r1, #yes, we want to overwrite the files
+                    out2 = r2
+                    )
+        else:
+            cmd = "{clump_cmd} {clump_opts} in={in1} out={out1} rename=f overwrite=true".format(
+                    clump_cmd = config.get("clumpify","clumpify_cmd"),
+                    clump_opts = config.get("clumpiy", "clumpify_opts"),
+                    in1 = r1,
+                    out1 = r1, #yes, we want to overwrite the files
+                    )
+        syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
+        subprocess.check_call(cmd, shell=True)
+    os.chdir(old_wd)
+
+
 
 def fastq_screen_worker(fname) :
     global localConfig
@@ -299,6 +334,7 @@ def postMakeSteps(config) :
     projectDirs = toDirs(projectDirs)
     sampleFiles = glob.glob("%s/%s%s/*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
     sampleFiles.extend(glob.glob("%s/%s%s/*/*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
+    sampleFiles.extend(glob.glob("%s/%s%s/*/*R[12]_001.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
     sampleFiles.extend(glob.glob("%s/%s%s/*/*/*R[12]_001.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
 
     global localConfig
@@ -306,6 +342,14 @@ def postMakeSteps(config) :
 
     # Avoid running post-processing (in case of a previous error) on optical duplicate files.
     #sampleFiles = [x for x in sampleFiles if "optical_duplicates" not in x]
+
+
+    #clumpify
+
+    p = mp.Pool(int(config.get("Options","clumpifyWorkerThreads")))
+    p.map(clumpify_worker, projectDirs)
+    p.close()
+    p.join()
 
 
     #suprDUPr

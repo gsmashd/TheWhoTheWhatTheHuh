@@ -121,6 +121,20 @@ def rewriteSampleSheet(config) :
         config.set("Options", "sampleSheet", "")
         return None
 
+def fixNames(config) :
+    lanes = config.get("Options", "lanes")
+    if lanes != "":
+        lanes = "_lanes{}".format(lanes)
+    
+   
+    names = glob.glob("%s/%s%s/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
+    fnames.extend(glob.glob("%s/%s%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
+    for fname in fnames:
+        if "_001.fastq.gz" in fname:
+            fnew = fname.replace("_001.fastq.gz", ".fastq.gz")
+            syslog.syslog("Moving %s to %s\n" % (fname, fnew))
+            shutil.move(fname, fnew)
+
 
 def bcl2fq(config) :
     '''
