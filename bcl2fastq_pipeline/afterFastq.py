@@ -153,7 +153,7 @@ def FastQC_worker(fname) :
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
-    projectName = fname.split("/")[-3] #It's the penultimate directory
+    projectName = fname.split("/")[-3]
     libName = fname.split("/")[-2] #The last directory
     cmd = "%s %s -o %s/%s%s/FASTQC_%s/%s %s" % (
           config.get("FastQC","fastqc_command"),
@@ -161,7 +161,7 @@ def FastQC_worker(fname) :
           config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
-          projectName,
+          config.get("Options","runID"),
           libName,
           fname)
 
@@ -257,16 +257,13 @@ def multiqc_worker(d) :
     in_conf.close()
     out_conf.close()
 
+    
 
-
-    dname[-1] = "FASTQC_{}".format(dname[-1])
-    dname = os.path.join(os.path.dirname(d),dname[-1])
-    cmd = "{} {} --config {} {}/*/*.zip {}/*/*".format(
-            config.get("MultiQC", "multiqc_command"), 
-            config.get("MultiQC", "multiqc_options"), 
-            conf_name,
-            dname, 
-            d
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/FASTQC* {flow_dir}/GCF*".format(
+            multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
+            muliqc_opts = config.get("MultiQC", "multiqc_options"), 
+            conf = conf_name,
+            flow_dir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))
             )
     syslog.syslog("[multiqc_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
