@@ -53,7 +53,7 @@ def clumpify_worker(d):
     old_wd = os.getcwd()
     os.chdir(d)
 
-    read1s = glob.glob("*_R1.fastq.gz")
+    read1s = glob.glob("GCF*/*_R1.fastq.gz")
 
     for r1 in read1s:
         r2 = r1.replace("R1.fastq.gz","R2.fastq.gz")
