@@ -53,6 +53,9 @@ def clumpify_worker(d):
     old_wd = os.getcwd()
     os.chdir(d)
 
+    if os.path.exists("clumpify.done"):
+        return
+
     read1s = glob.glob("GCF*/*_R1.fastq.gz")
 
     for r1 in read1s:
@@ -76,6 +79,7 @@ def clumpify_worker(d):
         syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
         subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
+    open("clumpify.done","w+").close()
 
 
 
