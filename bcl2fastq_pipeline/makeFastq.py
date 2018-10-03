@@ -128,7 +128,7 @@ def fixNames(config) :
     
    
     names = glob.glob("%s/%s%s/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
-    fnames.extend(glob.glob("%s/%s%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
+    names.extend(glob.glob("%s/%s%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
     for fname in fnames:
         if "_001.fastq.gz" in fname:
             fnew = fname.replace("_001.fastq.gz", ".fastq.gz")
