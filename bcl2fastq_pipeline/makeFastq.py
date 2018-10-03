@@ -129,7 +129,7 @@ def fixNames(config) :
    
     names = glob.glob("%s/%s%s/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
     names.extend(glob.glob("%s/%s%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
-    for fname in fnames:
+    for fname in names:
         if "_001.fastq.gz" in fname:
             fnew = fname.replace("_001.fastq.gz", ".fastq.gz")
             syslog.syslog("Moving %s to %s\n" % (fname, fnew))
