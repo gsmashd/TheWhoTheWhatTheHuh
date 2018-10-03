@@ -60,7 +60,7 @@ def clumpify_worker(d):
         if os.path.exists(r2):
             cmd = "{clump_cmd} {clump_opts} in1={in1} in2={in2} out1={out1} out2={out2} rcomp=f rename=f overwrite=true".format(
                     clump_cmd = config.get("clumpify","clumpify_cmd"),
-                    clump_opts = config.get("clumpiy", "clumpify_opts"),
+                    clump_opts = config.get("clumpify", "clumpify_opts"),
                     in1 = r1,
                     in2 = r2,
                     out1 = r1, #yes, we want to overwrite the files
