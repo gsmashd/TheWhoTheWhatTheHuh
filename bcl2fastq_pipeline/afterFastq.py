@@ -340,22 +340,18 @@ def postMakeSteps(config) :
     global localConfig
     localConfig = config
 
-    # Avoid running post-processing (in case of a previous error) on optical duplicate files.
-    #sampleFiles = [x for x in sampleFiles if "optical_duplicates" not in x]
-
-
+    #suprDUPr
+    """
+    SKIP SUPRDUPR FOR NOW - NEED ./filterfq to work
+    p = mp.Pool(int(config.get("Options","postMakeThreads")))
+    p.map(suprDUPr_worker, sampleFiles)
+    p.close()
+    p.join()
+    """
     #clumpify
 
     p = mp.Pool(int(config.get("Options","clumpifyWorkerThreads")))
     p.map(clumpify_worker, projectDirs)
-    p.close()
-    p.join()
-
-
-    #suprDUPr
-
-    p = mp.Pool(int(config.get("Options","postMakeThreads")))
-    p.map(suprDUPr_worker, sampleFiles)
     p.close()
     p.join()
 
