@@ -261,7 +261,7 @@ def multiqc_worker(d) :
 
     cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/FASTQC* {flow_dir}/GCF*".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
-            muliqc_opts = config.get("MultiQC", "multiqc_options"), 
+            multiqc_opts = config.get("MultiQC", "multiqc_options"), 
             conf = conf_name,
             flow_dir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))
             )
