@@ -177,7 +177,7 @@ def FastQC_worker(fname) :
           fname)
 
     # Skip if the output exists
-    fastqc_fname = glob.glob("{}/{}{}/FASTQC_*/*/{}".format(
+    fastqc_fname = glob.glob("{}/{}{}/FASTQC_{}/*/{}".format(
           config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
@@ -185,7 +185,7 @@ def FastQC_worker(fname) :
           fname.replace(".fastq.gz","_fastqc.zip")
           ))
 
-    fastqc_fname.extend(glob.glob("{}/{}{}/FASTQC_*/*/{}".format(
+    fastqc_fname.extend(glob.glob("{}/{}{}/FASTQC_{}/{}".format(
           config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
@@ -269,8 +269,8 @@ def multiqc_worker(d) :
     global localConfig
     config = localConfig
     oldWd = os.getcwd()
-    #os.chdir(d)
-    os.chdir("{}/{}".format(config.get('Paths','outputDir'), config.get('Options','runID')))
+    os.chdir(d)
+    #os.chdir("{}/{}".format(config.get('Paths','outputDir'), config.get('Options','runID')))
     dname = d.split("/")
     pname = dname[-1]
 
