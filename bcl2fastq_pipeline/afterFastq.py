@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as img
 import yaml
 import json
+import re
 '''
 Do we really need the md5sum?
 '''
@@ -56,8 +57,9 @@ def clumpify_worker(d):
     if os.path.exists("clumpify.done"):
         return
 
-    read1s = glob.glob("GCF*/*_R1.fastq.gz")
-
+    read1s = glob.glob("*_R1.fastq.gz")
+    read1s.extend(glob.glob("*/*_R1.fastq.gz")) 
+   
     for r1 in read1s:
         r2 = r1.replace("R1.fastq.gz","R2.fastq.gz")
         if os.path.exists(r2):
@@ -146,6 +148,14 @@ def suprDUPr_worker(fname) :
     syslog.syslog("[suprDUPr_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
+def get_gcf_name(fname):
+    for name in fname.split('/'):
+        if re.match(r'GCF-[0-9]{4}-[0-9]{3,}',name):
+            return name
+    raise Exception('Unable to determine GCF project number for filename {}\n'.format(fname))
+
+
+
 def FastQC_worker(fname) :
     global localConfig
     config = localConfig
@@ -153,7 +163,9 @@ def FastQC_worker(fname) :
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
-    projectName = fname.split("/")[-3]
+    #projectName = fname.split("/")[-3]
+    projectName = get_gcf_name(fname)
+
     libName = fname.split("/")[-2] #The last directory
     cmd = "%s %s -o %s/%s%s/FASTQC_%s/%s %s" % (
           config.get("FastQC","fastqc_command"),
@@ -161,11 +173,30 @@ def FastQC_worker(fname) :
           config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
-          config.get("Options","runID"),
-          libName,
+          projectName,
           fname)
 
     # Skip if the output exists
+    fastqc_fname = glob.glob("{}/{}{}/FASTQC_*/*/{}".format(
+          config.get("Paths","outputDir"),
+          config.get("Options","runID"),
+          lanes,
+          projectName,
+          fname.replace(".fastq.gz","_fastqc.zip")
+          ))
+
+    fastqc_fname.extend(glob.glob("{}/{}{}/FASTQC_*/*/{}".format(
+          config.get("Paths","outputDir"),
+          config.get("Options","runID"),
+          lanes,
+          projectName,
+          fname.replace(".fastq.gz","_fastqc.zip")
+          )))
+
+    if fastqc_fname:
+        return
+    
+    """
     if os.path.exists("%s/%s%s/FASTQC_%s/%s/%s_fastqc.zip" % (config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
@@ -173,12 +204,12 @@ def FastQC_worker(fname) :
           libName,
           os.path.basename(fname)[:-9])):
         return
+    """
 
     os.makedirs("%s/%s%s/FASTQC_%s/%s" % (config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
-          projectName,
-          libName), exist_ok=True)
+          projectName), exist_ok=True)
 
     syslog.syslog("[FastQC_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
@@ -187,8 +218,12 @@ def toDirs(files) :
     s = set()
     for f in files :
         d = os.path.dirname(f)
-        s.add(d[:d.rfind('/')]) #We just want projects, not individual libraries
+        if d.split('/')[-1].startswith("GCF-"):
+            s.add(d)
+        else:
+            s.add(d[:d.rfind('/')]) 
     return s
+
 
 def get_read_geometry(run_dir):
     stats_file = open('{}/Stats/Stats.json'.format(run_dir),'r')
@@ -222,7 +257,10 @@ def md5sum_worker(d) :
     os.chdir(d)
     if os.path.exists("md5sums.txt"):
         return
-    cmd = "md5sum */*.fastq.gz > md5sums.txt"
+    if glob.glob("*.fastq.gz"):
+        cmd = "md5sum *.fastq.gz > md5sums.txt"
+    else:
+        cmd = "md5sum */*.fastq.gz > md5sums.txt"
     syslog.syslog("[md5sum_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
@@ -231,15 +269,17 @@ def multiqc_worker(d) :
     global localConfig
     config = localConfig
     oldWd = os.getcwd()
-    os.chdir(d)
+    #os.chdir(d)
+    os.chdir("{}/{}".format(config.get('Paths','outputDir'), config.get('Options','runID')))
     dname = d.split("/")
+    pname = dname[-1]
 
-    conf_name = ".multiqc_config.yaml"
+    conf_name = ".{}_multiqc_config.yaml".format(pname)
     in_conf = open("/root/multiqc_config.yaml","r")
     out_conf = open(conf_name,"w+")
     mqc_conf = yaml.load(in_conf)
 
-    mqc_conf['title'] = dname[-1]
+    mqc_conf['title'] = pname
 
     read_geometry = get_read_geometry(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
     contact = config.get('MultiQC','report_contact')
@@ -259,11 +299,12 @@ def multiqc_worker(d) :
 
     
 
-    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/FASTQC* {flow_dir}/GCF*".format(
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/FASTQC_{pname} {flow_dir}/{pname}".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
             multiqc_opts = config.get("MultiQC", "multiqc_options"), 
             conf = conf_name,
-            flow_dir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))
+            flow_dir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
+            pname=pname,  
             )
     syslog.syslog("[multiqc_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
