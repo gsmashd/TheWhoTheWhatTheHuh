@@ -206,9 +206,9 @@ def get_read_geometry(run_dir):
         elif read['Number'] == 2:
             R2 = read['NumCycles']
     if R1 and R2:
-        return 'R1: {}, R2: {}'.format(R1,R2)
+        return 'Paired end - forward read length (R1): {}, reverse read length (R2): {}'.format(R1,R2)
     elif R1 and not R2:
-        return 'R1: {}'.format(R1)
+        return 'Single end - read length (R1): {}'.format(R1)
     elif not R1 and not R2:
         return 'Read geometry could not be automatically determined.'
 
