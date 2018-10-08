@@ -167,7 +167,7 @@ def FastQC_worker(fname) :
     projectName = get_gcf_name(fname)
 
     libName = fname.split("/")[-2] #The last directory
-    cmd = "%s %s -o %s/%s%s/FASTQC_%s/%s %s" % (
+    cmd = "%s %s -o %s/%s%s/FASTQC_%s/ %s" % (
           config.get("FastQC","fastqc_command"),
           config.get("FastQC","fastqc_options"),
           config.get("Paths","outputDir"),
@@ -206,7 +206,7 @@ def FastQC_worker(fname) :
         return
     """
 
-    os.makedirs("%s/%s%s/FASTQC_%s/%s" % (config.get("Paths","outputDir"),
+    os.makedirs("%s/%s%s/FASTQC_%s/" % (config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
           projectName), exist_ok=True)
