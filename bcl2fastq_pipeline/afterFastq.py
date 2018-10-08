@@ -80,8 +80,8 @@ def clumpify_worker(d):
                     )
         syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
         subprocess.check_call(cmd, shell=True)
-    os.chdir(old_wd)
     open("clumpify.done","w+").close()
+    os.chdir(old_wd)
 
 
 
