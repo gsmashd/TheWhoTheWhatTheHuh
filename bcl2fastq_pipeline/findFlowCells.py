@@ -239,10 +239,16 @@ This function always returns its configuration. If there's a new flow cell to
 process, then the runID is filled in. Otherwise, that's set to None.
 '''
 def newFlowCell(config) :
-    dirs = glob.glob("%s/*/data/*_SN*_*/RTAComplete.txt" % config.get("Paths","baseDir"))
-    dirs.extend(glob.glob("%s/*/data/*_NB*_*/RTAComplete.txt" % config.get("Paths","baseDir")))
-    dirs.extend(glob.glob("%s/*/data/*_M*_*/RTAComplete.txt" % config.get("Paths","baseDir")))
-    dirs.extend(glob.glob("%s/*/data/*_J*_*/RTAComplete.txt" % config.get("Paths","baseDir")))
+    #HiSeq2500
+    dirs = glob.glob("%s/*/data/*_SN7001334_*/ImageAnalysis_Netcopy_complete.txt" % config.get("Paths","baseDir"))
+    #NextSeq 500
+    dirs.extend(glob.glob("%s/*/data/*_NB501038_*/RunCompletionStatus.xml" % config.get("Paths","baseDir")))
+    #MiSeq NTNU
+    dirs.extend(glob.glob("%s/*/data/*_M026575*_*/ImageAnalysis_Netcopy_complete.txt" % config.get("Paths","baseDir")))
+    #MiSeq St. Olav 
+    dirs.extend(glob.glob("%s/*/data/*_M03942*_*/ImageAnalysis_Netcopy_complete.txt" % config.get("Paths","baseDir")))
+    #HiSeq4000
+    dirs.extend(glob.glob("%s/*/data/*_K00251*_*/SequencingComplete.txt" % config.get("Paths","baseDir")))
     for d in dirs :
         #Get the flow cell ID (e.g., 150416_SN7001180_0196_BC605HACXX)
         config.set('Options','runID',d.split("/")[-2])
