@@ -80,6 +80,14 @@ def clumpify_worker(d):
                     )
         syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
         subprocess.check_call(cmd, shell=True)
+
+    #clumpify.sh doesn't allways clean up nicely.
+    #need to manually ensure that temp fles are removed
+    tmp_files = glob.glob("*temp*")
+    tmp_files.extend(glob.glob("*/*temp*"))
+    if tmp_files:
+        subprocess.check_call("rm {}".format(" ".join(tmp_files)), shell=True)
+
     open("clumpify.done","w+").close()
     os.chdir(old_wd)
 
@@ -182,7 +190,7 @@ def FastQC_worker(fname) :
           config.get("Options","runID"),
           lanes,
           projectName,
-          fname.replace(".fastq.gz","_fastqc.zip")
+          os.path.basename(fname).replace(".fastq.gz","_fastqc.zip")
           ))
 
     fastqc_fname.extend(glob.glob("{}/{}{}/FASTQC_{}/{}".format(
@@ -190,7 +198,7 @@ def FastQC_worker(fname) :
           config.get("Options","runID"),
           lanes,
           projectName,
-          fname.replace(".fastq.gz","_fastqc.zip")
+          os.path.basename(fname).replace(".fastq.gz","_fastqc.zip")
           )))
 
     if fastqc_fname:
