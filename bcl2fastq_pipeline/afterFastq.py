@@ -103,17 +103,26 @@ def decontaminate_worker(fname):
     global localConfig
     config = localConfig
 
+    if os.path.exists(fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))):
+        return
+
     masked_path = config.get("MaskedGenomes","HGDir")
     if not masked_path:
         raise Exception("HGDir not set in config bcl2fastq.ini!\n")
 
     if not os.path.exists(masked_path):
         raise Exception("HGDir {} does not exist!\n".format(masked_path))
-
-    cmd = "{bbmap_cmd} {bbmap_opts} in={infile} outu={clean_out} outm={contaminated_out}".format(
-            
-            )
     
+    os.makedirs("{}/contaminated/".format(os.path.dirname(fname)),exist_ok=True)
+    cmd = "{bbmap_cmd} {bbmap_opts} in={infile} outu={clean_out} outm={contaminated_out}".format(
+            bbmap_cmd = config.get("MaskedGenomes","bbmap_cmd"),
+            bbmap_opts = config.get("MaskedGenomes","bbmap_opts"),
+            infile = fname,
+            outu = fname,
+            outm = fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))
+            )
+    syslog.syslog("[decontaminate_worker] Processing %s\n" % cmd)
+    subprocess.check_call(cmd, shell=True)
 
 
 def fastq_screen_worker(fname) :
@@ -425,6 +434,13 @@ def postMakeSteps(config) :
 
     p = mp.Pool(int(config.get("Options","clumpifyWorkerThreads")))
     p.map(clumpify_worker, projectDirs)
+    p.close()
+    p.join()
+
+    #Decontaminate with masked genome
+
+    p = mp.Pool(int(1))
+    p.map(decontaminate_worker, sampleFiles)
     p.close()
     p.join()
 
