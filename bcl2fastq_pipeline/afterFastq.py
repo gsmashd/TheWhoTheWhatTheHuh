@@ -114,9 +114,10 @@ def decontaminate_worker(fname):
         raise Exception("HGDir {} does not exist!\n".format(masked_path))
     
     os.makedirs("{}/contaminated/".format(os.path.dirname(fname)),exist_ok=True)
-    cmd = "{bbmap_cmd} {bbmap_opts} in={infile} outu={clean_out} outm={contaminated_out}".format(
+    cmd = "{bbmap_cmd} {bbmap_opts} path={masked_path} in={infile} outu={clean_out} outm={contaminated_out}".format(
             bbmap_cmd = config.get("MaskedGenomes","bbmap_cmd"),
             bbmap_opts = config.get("MaskedGenomes","bbmap_opts"),
+            masked_path = config.get("MaskedGenomes","HGDir"),
             infile = fname,
             clean_out = fname,
             contaminated_out = fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))
