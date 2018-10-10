@@ -73,8 +73,6 @@ def clumpify_worker(d):
                     out1 = out_r1, #yes, we want to overwrite the files
                     out2 = out_r2
                     )
-            os.rename(out_r1,r1)
-            os.rename(out_r2,r2)
         else:
             out_r1 = r1.replace(".fastq.gz","_clumped.fastq.gz") 
             cmd = "{clump_cmd} {clump_opts} in={in1} out={out1} rename=f overwrite=true".format(
@@ -83,9 +81,11 @@ def clumpify_worker(d):
                     in1 = r1,
                     out1 = out_r1 
                     )
-            os.rename(out_r1,r1)
         syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
         subprocess.check_call(cmd, shell=True)
+        os.rename(out_r1,r1)
+        if r2:
+            os.rename(out_r2,r2)
 
     #clumpify.sh doesn't allways clean up nicely.
     #need to manually ensure that temp fles are removed
