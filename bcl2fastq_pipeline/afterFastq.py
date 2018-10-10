@@ -118,8 +118,8 @@ def decontaminate_worker(fname):
             bbmap_cmd = config.get("MaskedGenomes","bbmap_cmd"),
             bbmap_opts = config.get("MaskedGenomes","bbmap_opts"),
             infile = fname,
-            outu = fname,
-            outm = fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))
+            clean_out = fname,
+            contaminated_out = fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))
             )
     syslog.syslog("[decontaminate_worker] Processing %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
