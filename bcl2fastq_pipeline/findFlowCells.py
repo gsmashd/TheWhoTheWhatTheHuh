@@ -37,19 +37,6 @@ def getNumLanes(d):
         return 1
 
 
-# For MiSeq and HiSeq 2500/3000 runs, the i5 primer must be reverse complemented
-def mustRevComp(d):
-    FCID = d.strip("/").split("/")[-1]
-    # The type is designated by the first 1-2 letters of the machine name
-    t = FCID[7:]
-    if t.startswith("M"):
-        return True
-    elif t.startswith("SN"):
-        return True
-    elif t.startswith("J"):
-        return True
-    return False
-
 
 def revComp(s):
     """Reverse complement a primer sequence"""
@@ -135,7 +122,7 @@ def parseSampleSheet(ss):
         storeLanes = False
 
     # For NextSeq/MiSeq, reverse complement I5 sequences
-    rcI5 = mustRevComp(os.path.dirname(ss))
+    #rcI5 = mustRevComp(os.path.dirname(ss))
 
     f = open(ss)
     inData = False
