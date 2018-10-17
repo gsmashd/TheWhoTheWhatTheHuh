@@ -129,7 +129,7 @@ def decontaminate_worker(fname):
                 bbmap_opts = config.get("MaskedGenomes","bbmap_opts"),
                 masked_path = config.get("MaskedGenomes","HGDir"),
                 infile = fname,
-                infile2 = r2
+                infile2 = r2,
                 clean_out = fname.replace("R1.fastq.gz","interleaved.fastq.gz"),
                 contaminated_out = cont_out 
                 )
