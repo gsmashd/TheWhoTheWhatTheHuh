@@ -478,6 +478,13 @@ def postMakeSteps(config) :
     p.close()
     p.join()
     """
+    #Decontaminate with masked genome
+
+    p = mp.Pool(int(1))
+    p.map(decontaminate_worker, sampleFiles)
+    p.close()
+    p.join()
+    
     #clumpify
 
     p = mp.Pool(int(config.get("Options","clumpifyWorkerThreads")))
@@ -485,12 +492,6 @@ def postMakeSteps(config) :
     p.close()
     p.join()
 
-    #Decontaminate with masked genome
-
-    p = mp.Pool(int(1))
-    p.map(decontaminate_worker, sampleFiles)
-    p.close()
-    p.join()
 
     #FastQC
 
