@@ -153,13 +153,13 @@ def decontaminate_worker(fname):
         cmd = "{rename_cmd} {rename_opts} in={interleaved} out1={out_r1} out2={out_r2}".format(
                 rename_cmd = "rename.sh",
                 rename_opts = "renamebymapping=t",
-                interleaved = fname.replace("R1.fastq.gz","interleved.fastq.gz"),
+                interleaved = fname.replace("R1.fastq.gz","interleaved.fastq.gz"),
                 out_r1 = fname,
                 out_r2 = r2
                 )
         syslog.syslog("[decontaminate_worker] De-interleaving %s\n" % cmd)
         subprocess.check_call(cmd, shell=True)
-        os.remove(fname.replace("R1.fastq.gz","interleved.fastq.gz"))
+        os.remove(fname.replace("R1.fastq.gz","interleaved.fastq.gz"))
         #De-interleave contaminated file
         cmd = "{rename_cmd} {rename_opts} in={interleaved} out1={out_r1} out2={out_r2}".format(
                 rename_cmd = "rename.sh",
