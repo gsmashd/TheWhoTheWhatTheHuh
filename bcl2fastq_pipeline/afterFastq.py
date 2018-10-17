@@ -45,6 +45,7 @@ def bgzip_worker(fname) :
     subprocess.check_call(cmd, shell=True)
 
 def clumpify_worker(d):
+    #TODO rewrite to use fname for better paralellization on bigger machine
     global localConfig
     config = localConfig
 
@@ -103,8 +104,14 @@ def decontaminate_worker(fname):
     global localConfig
     config = localConfig
 
+    #We use R1 files to construct R2 filenames for paired end
+    if "R2.fastq.gz" in fname:
+        return
+
     if os.path.exists(fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))):
         return
+
+    r2 = fname.replace("R1.fastq.gz","R2.fastq.gz") if os.path.exists(fname.replace("R1.fastq.gz","R2.fastq.gz")) else None
 
     masked_path = config.get("MaskedGenomes","HGDir")
     if not masked_path:
@@ -114,16 +121,56 @@ def decontaminate_worker(fname):
         raise Exception("HGDir {} does not exist!\n".format(masked_path))
     
     os.makedirs("{}/contaminated/".format(os.path.dirname(fname)),exist_ok=True)
-    cmd = "{bbmap_cmd} {bbmap_opts} path={masked_path} in={infile} outu={clean_out} outm={contaminated_out}".format(
-            bbmap_cmd = config.get("MaskedGenomes","bbmap_cmd"),
-            bbmap_opts = config.get("MaskedGenomes","bbmap_opts"),
-            masked_path = config.get("MaskedGenomes","HGDir"),
-            infile = fname,
-            clean_out = fname,
-            contaminated_out = fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))
-            )
+
+    if r2:
+        cont_out = fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname).replace("R1.fastq.gz","interleaved.fastq.gz")))
+        cmd = "{bbmap_cmd} {bbmap_opts} path={masked_path} in={infile} in2={infile2} outu={clean_out} outm={contaminated_out}".format(
+                bbmap_cmd = config.get("MaskedGenomes","bbmap_cmd"),
+                bbmap_opts = config.get("MaskedGenomes","bbmap_opts"),
+                masked_path = config.get("MaskedGenomes","HGDir"),
+                infile = fname,
+                infile2 = r2
+                clean_out = fname.replace("R1.fastq.gz","interleaved.fastq.gz"),
+                contaminated_out = cont_out 
+                )
+    else:   
+        cmd = "{bbmap_cmd} {bbmap_opts} path={masked_path} in={infile} outu={clean_out} outm={contaminated_out}".format(
+                bbmap_cmd = config.get("MaskedGenomes","bbmap_cmd"),
+                bbmap_opts = config.get("MaskedGenomes","bbmap_opts"),
+                masked_path = config.get("MaskedGenomes","HGDir"),
+                infile = fname,
+                clean_out = fname,
+                contaminated_out = fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))
+                )
+
     syslog.syslog("[decontaminate_worker] Processing %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
+    # clean up
+    os.remove(fname)
+    if r2:
+        os.remove(r2)
+        #If paired end, split interleaved files to R1 and R2
+        cmd = "{rename_cmd} {rename_opts} in={interleaved} out1={out_r1} out2={out_r2}".format(
+                rename_cmd = "rename.sh",
+                rename_opts = "renamebymapping=t",
+                interleaved = fname.replace("R1.fastq.gz","interleved.fastq.gz"),
+                out_r1 = fname,
+                out_r2 = r2
+                )
+        syslog.syslog("[decontaminate_worker] De-interleaving %s\n" % cmd)
+        subprocess.check_call(cmd, shell=True)
+        os.remove(fname.replace("R1.fastq.gz","interleved.fastq.gz"))
+        #De-interleave contaminated file
+        cmd = "{rename_cmd} {rename_opts} in={interleaved} out1={out_r1} out2={out_r2}".format(
+                rename_cmd = "rename.sh",
+                rename_opts = "renamebymapping=t",
+                interleaved = cont_out,
+                out_r1 = cont_out.replace("interleaved.fastq.gz","R1.fastq.gz"),
+                out_r2 = cont_out.replace("interleaved.fastq.gz","R2.fastq.gz")
+                )
+        syslog.syslog("[decontaminate_worker] De-interleaving %s\n" % cmd)
+        subprocess.check_call(cmd, shell=True)
+        os.remove(cont_out)
 
 
 def fastq_screen_worker(fname) :
