@@ -64,7 +64,7 @@ def formatHeaderLine(cols, colLabs, indexCols, storeLanes):
     return ",".join(l)
 
 
-def formatLine(cols, colLabs, indexCols, storeLanes, rcI5):
+def formatLine(cols, colLabs, indexCols, storeLanes, rcI5=False):
     """Format a single line in a sample sheet"""
     l = []
     if storeLanes is True and colLabs[0] is not None:
@@ -156,7 +156,7 @@ def parseSampleSheet(ss):
                 if colLabs[0] is not None and storeLanes is True:
                     rv[bcLen][1].add(int(cols[colLabs[0]]))
 
-                rv[bcLen][0].append(formatLine(cols, colLabs, indexCols, storeLanes, rcI5))
+                rv[bcLen][0].append(formatLine(cols, colLabs, indexCols, storeLanes))
 
             # Set columns for barcodes, etc.
             if lastLine is None:
