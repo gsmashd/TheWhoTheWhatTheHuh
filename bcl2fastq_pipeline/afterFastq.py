@@ -87,18 +87,6 @@ def clumpify_worker(fname):
     if r2:
         os.rename(out_r2,r2)
 
-    #clumpify.sh doesn't allways clean up nicely.
-    #need to manually ensure that temp fles are removed
-    """
-    SHOULD NO LONGER BE NEEDED FOR NEWER VERSIONS OF CLUMPIFY.SH
-    tmp_files = glob.glob("*temp*")
-    tmp_files.extend(glob.glob("*/*temp*"))
-    if tmp_files:
-        subprocess.check_call("rm {}".format(" ".join(tmp_files)), shell=True)
-    """
-    open("clumpify.done","w+").close()
-    os.chdir(old_wd)
-
 def decontaminate_worker(fname):
     global localConfig
     config = localConfig
@@ -490,7 +478,7 @@ def postMakeSteps(config) :
     p.map(clumpify_worker, sampleFiles)
     p.close()
     p.join()
-
+    open("clumpify.done","w+").close()
 
     #FastQC
 
