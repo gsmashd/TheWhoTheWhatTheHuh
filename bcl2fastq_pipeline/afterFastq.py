@@ -44,7 +44,7 @@ def bgzip_worker(fname) :
     syslog.syslog("[bgzip_worker] Running %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
 
-def clumpify_worker(d):
+def clumpify_worker(fname):
     #TODO rewrite to use fname for better paralellization on bigger machine
     global localConfig
     config = localConfig
@@ -52,41 +52,40 @@ def clumpify_worker(d):
     if config.get("Options","singleCell") == "1":
         return
 
-    old_wd = os.getcwd()
-    os.chdir(d)
+    #We use R1 files to construct R2 filenames for paired end
+    if "R2.fastq.gz" in fname:
+        return
 
     if os.path.exists("clumpify.done"):
         return
 
-    read1s = glob.glob("*_R1.fastq.gz")
-    read1s.extend(glob.glob("*/*_R1.fastq.gz")) 
-   
-    for r1 in read1s:
-        r2 = r1.replace("R1.fastq.gz","R2.fastq.gz")
-        if os.path.exists(r2):
-            out_r1 = r1.replace(".fastq.gz","_clumped.fastq.gz") 
-            out_r2 = r2.replace(".fastq.gz","_clumped.fastq.gz")
-            cmd = "{clump_cmd} {clump_opts} in1={in1} in2={in2} out1={out1} out2={out2} rcomp=f rename=f overwrite=true".format(
-                    clump_cmd = config.get("clumpify","clumpify_cmd"),
-                    clump_opts = config.get("clumpify", "clumpify_opts"),
-                    in1 = r1,
-                    in2 = r2,
-                    out1 = out_r1, #yes, we want to overwrite the files
-                    out2 = out_r2
-                    )
-        else:
-            out_r1 = r1.replace(".fastq.gz","_clumped.fastq.gz") 
-            cmd = "{clump_cmd} {clump_opts} in={in1} out={out1} rename=f overwrite=true".format(
-                    clump_cmd = config.get("clumpify","clumpify_cmd"),
-                    clump_opts = config.get("clumpify", "clumpify_opts"),
-                    in1 = r1,
-                    out1 = out_r1 
-                    )
-        syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
-        subprocess.check_call(cmd, shell=True)
-        os.rename(out_r1,r1)
-        if r2:
-            os.rename(out_r2,r2)
+    r2 = fname.replace("R1.fastq.gz","R2.fastq.gz") if os.path.exists(fname.replace("R1.fastq.gz","R2.fastq.gz")) else None
+
+    r2 = r1.replace("R1.fastq.gz","R2.fastq.gz")
+    if r2:
+        out_r1 = r1.replace(".fastq.gz","_clumped.fastq.gz") 
+        out_r2 = r2.replace(".fastq.gz","_clumped.fastq.gz")
+        cmd = "{clump_cmd} {clump_opts} in1={in1} in2={in2} out1={out1} out2={out2} rcomp=f rename=f overwrite=true".format(
+                clump_cmd = config.get("clumpify","clumpify_cmd"),
+                clump_opts = config.get("clumpify", "clumpify_opts"),
+                in1 = r1,
+                in2 = r2,
+                out1 = out_r1, #yes, we want to overwrite the files
+                out2 = out_r2
+                )
+    else:
+        out_r1 = r1.replace(".fastq.gz","_clumped.fastq.gz") 
+        cmd = "{clump_cmd} {clump_opts} in={in1} out={out1} rename=f overwrite=true".format(
+                clump_cmd = config.get("clumpify","clumpify_cmd"),
+                clump_opts = config.get("clumpify", "clumpify_opts"),
+                in1 = r1,
+                out1 = out_r1 
+                )
+    syslog.syslog("[clumpify_worker] Processing %s\n" % cmd)
+    subprocess.check_call(cmd, shell=True)
+    os.rename(out_r1,r1)
+    if r2:
+        os.rename(out_r2,r2)
 
     #clumpify.sh doesn't allways clean up nicely.
     #need to manually ensure that temp fles are removed
@@ -488,7 +487,7 @@ def postMakeSteps(config) :
     #clumpify
 
     p = mp.Pool(int(config.get("Options","clumpifyWorkerThreads")))
-    p.map(clumpify_worker, projectDirs)
+    p.map(clumpify_worker, sampleFiles)
     p.close()
     p.join()
 
