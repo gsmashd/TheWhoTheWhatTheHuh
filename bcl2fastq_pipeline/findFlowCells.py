@@ -93,7 +93,7 @@ def reformatSS(rv):
     nLanes = 0
 
     for k, v in rv.items():
-        if k=='SingleCell' or 'Decontaminate':
+        if k in ['SingleCell','Decontaminate']:
             continue
         ss.append("\n".join(v[0]))
         lanes = ""
