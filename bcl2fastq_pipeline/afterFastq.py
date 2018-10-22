@@ -478,11 +478,11 @@ def postMakeSteps(config) :
     p.join()
     """
     #Decontaminate with masked genome
-
-    p = mp.Pool(int(1))
-    p.map(decontaminate_worker, sampleFiles)
-    p.close()
-    p.join()
+    if config.get("Options","decontaminate") == "1":
+        p = mp.Pool(int(1))
+        p.map(decontaminate_worker, sampleFiles)
+        p.close()
+        p.join()
     
     #clumpify
 
