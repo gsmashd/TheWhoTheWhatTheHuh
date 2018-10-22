@@ -58,7 +58,7 @@ def clumpify_worker(fname):
 
     if os.path.exists("clumpify.done"):
         return
-
+    r1 = fname
     r2 = fname.replace("R1.fastq.gz","R2.fastq.gz") if os.path.exists(fname.replace("R1.fastq.gz","R2.fastq.gz")) else None
 
     r2 = r1.replace("R1.fastq.gz","R2.fastq.gz")
