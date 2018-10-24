@@ -45,7 +45,6 @@ def bgzip_worker(fname) :
     subprocess.check_call(cmd, shell=True)
 
 def clumpify_worker(fname):
-    #TODO rewrite to use fname for better paralellization on bigger machine
     global localConfig
     config = localConfig
 
@@ -58,10 +57,10 @@ def clumpify_worker(fname):
 
     if os.path.exists(os.path.join(os.path.dirname(fname),"clumpify.done")):
         return
+
     r1 = fname
     r2 = fname.replace("R1.fastq.gz","R2.fastq.gz") if os.path.exists(fname.replace("R1.fastq.gz","R2.fastq.gz")) else None
 
-    r2 = r1.replace("R1.fastq.gz","R2.fastq.gz")
     if r2:
         out_r1 = r1.replace(".fastq.gz","_clumped.fastq.gz") 
         out_r2 = r2.replace(".fastq.gz","_clumped.fastq.gz")
@@ -433,6 +432,12 @@ def parserDemultiplexStats(config) :
             i+1,undetermined[i],totals[i],100*undetermined[i]/totals[i])
     return out
 
+
+def clumpify_mark_done(project_dirs):
+    for d in project_dirs:
+        open(os.path.join(d,"clumpify.done"),"w+").close()
+
+
 #All steps that should be run after `make` go here
 def postMakeSteps(config) :
     '''
@@ -480,7 +485,7 @@ def postMakeSteps(config) :
     p.map(clumpify_worker, sampleFiles)
     p.close()
     p.join()
-    open("clumpify.done","w+").close()
+    clumpify_mark_done(projectDirs)
 
     #FastQC
 
