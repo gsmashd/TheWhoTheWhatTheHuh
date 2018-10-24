@@ -460,6 +460,7 @@ def postMakeSteps(config) :
     sampleFiles.extend(glob.glob("%s/%s%s/*/*/*R[12]_001.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
 
     sampleFiles = [sf for sf in sampleFiles if not 'contaminated' in sf]
+    sampleFiles = [sf for sf in sampleFiles if not 'filtered' in sf]
 
     global localConfig
     localConfig = config
