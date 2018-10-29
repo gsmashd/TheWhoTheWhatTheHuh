@@ -85,6 +85,11 @@ def list_flowcell_all(flowcell):
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     return flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
 
+def pretty_print(df):
+    print("Project \t Flowcell path \t Timestamp")
+    for i, row in df.iteritems():
+        print("{}\t{}\t{}".format(row['project'], row['flowcell_path'], row['timestamp']))
+
 def main(argv):
 
     config = bcl2fastq_pipeline.getConfig.getConfig()
@@ -93,16 +98,16 @@ def main(argv):
     elif argv[0] == 'delete-flowcell':
         delete_flowcell(*argv[1:])
     elif argv[0] == 'list':
-        print(list_processed())
+        pretty_print(list_processed())
     elif argv[0] == 'list-all':
         df = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-        print(df)
+        pretty_print(df)
     elif argv[0] == 'list-project':
-        print(list_project(argv[1]))
+        pretty_print(list_project(argv[1]))
     elif argv[0] == 'list-flowcell':
-        print(list_flowcell(argv[1]))
+        pretty_print(list_flowcell(argv[1]))
     elif argv[0] == 'list-flowcell-all':
-        print(list_flowcell_all(argv[1]))
+        pretty_print(list_flowcell_all(argv[1]))
     elif argv[0] == 'help':
         print(HELP_MESSAGE)
     else:
