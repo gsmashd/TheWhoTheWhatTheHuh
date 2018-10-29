@@ -11,9 +11,11 @@ flowcell_manager.py usage \n
 \n
 flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
 flowcell_manager.py delete-fowcell flowcell-path --- deletes the flowcell and all containing projects\n
-flowcell_manager.py list --- lists all projects in inventory file \n
+flowcell_manager.py list --- lists all processed projects in inventory file \n
+flowcell_manager.py list-all --- lists all projects in inventory file (also unprocessed)\n
 flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
-flowcell_manager.py list-flowcell flowcell-paht --- lists all occurences of a specific flowcell-path \n
+flowcell_manager.py list-flowcell flowcell-path --- lists all occurences of a specific flowcell-path that is processed\n
+flowcell_manager.py list-flowcell-all flowcell-path --- lists all occurences of a specific flowcell-path, even unprocessed flowcells \n
 flowcell_manager.py help --- print this message \n
 """
 
@@ -62,6 +64,11 @@ def delete_flowcell(flowcell):
             )
  
 
+def list_processed():
+    config = bcl2fastq_pipeline.getConfig.getConfig()
+    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    return flowcells_processed.loc[(flowcells_processed['timestamp'] != '0')]
+
 def list_project(project):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
@@ -85,6 +92,8 @@ def main(argv):
         add_flowcell(*argv[1:])
     elif argv[0] == 'delete-flowcell':
         delete_flowcell(*argv[1:])
+    elif argv[0] == 'list':
+        print(list_processed())
     elif argv[0] == 'list-all':
         df = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
         print(df)
