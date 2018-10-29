@@ -59,8 +59,7 @@ if __name__=='__main__':
     main(sys.argv[1:])
 
 
-HELP_MESSAGE = 
-"
+HELP_MESSAGE = """
 flowcell_manager.py usage \n
 \n
 flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
@@ -68,5 +67,5 @@ flowcell_manager.py list --- lists all projects in inventory file \n
 flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
 flowcell_manager.py list-flowcell flowcell-paht --- lists all occurences of a specific flowcell-path \n
 flowcell_manager.py help --- print this message \n
-"
+"""
 
