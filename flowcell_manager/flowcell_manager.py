@@ -5,6 +5,16 @@ import sys
 import pandas as pd
 import os
 
+HELP_MESSAGE = """
+flowcell_manager.py usage \n
+\n
+flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
+flowcell_manager.py list --- lists all projects in inventory file \n
+flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
+flowcell_manager.py list-flowcell flowcell-paht --- lists all occurences of a specific flowcell-path \n
+flowcell_manager.py help --- print this message \n
+"""
+
 def add_flowcell(project,path,timestamp):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     row_list = [
@@ -52,20 +62,8 @@ def main(argv):
         print(HELP_MESSAGE)
 
 
-
-
-
 if __name__=='__main__':
     main(sys.argv[1:])
 
 
-HELP_MESSAGE = """
-flowcell_manager.py usage \n
-\n
-flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
-flowcell_manager.py list --- lists all projects in inventory file \n
-flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
-flowcell_manager.py list-flowcell flowcell-paht --- lists all occurences of a specific flowcell-path \n
-flowcell_manager.py help --- print this message \n
-"""
 
