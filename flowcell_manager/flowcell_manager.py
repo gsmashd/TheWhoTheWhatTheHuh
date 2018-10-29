@@ -24,18 +24,49 @@ def add_flowcell(project,path,timestamp):
             columns = ['project','flowcell_path','timestamp'],
             )
 
+def list_project(project):
+    config = bcl2fastq_pipeline.getConfig.getConfig()
+    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    flowcells_processed.loc[flowcells_processed['project'] == project]
+
+def list_project(flowcell):
+    config = bcl2fastq_pipeline.getConfig.getConfig()
+    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
 
 def main(argv):
 
-    print(argv)
     config = bcl2fastq_pipeline.getConfig.getConfig()
+    print(argv)
+    if argv[0] == 'add':
+        add_flowcell(*argv[1:])
+    elif argv[0] == 'list':
+        pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    elif argv[0] == 'list-project':
+        list_project(argv[1])
+    elif argv[0] == 'list-flowcell':
+        list_flowcell(argv[1])
+    elif argv[0] == 'help':
+        print(HELP_MESSAGE)
+    else:
+        print(HELP_MESSAGE)
 
-    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    print(flowcells_processed)
 
 
 
 
 if __name__=='__main__':
     main(sys.argv[1:])
+
+
+HELP_MESSAGE = 
+"
+flowcell_manager.py usage \n
+\n
+flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
+flowcell_manager.py list --- lists all projects in inventory file \n
+flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
+flowcell_manager.py list-flowcell flowcell-paht --- lists all occurences of a specific flowcell-path \n
+flowcell_manager.py help --- print this message \n
+"
 
