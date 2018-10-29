@@ -4,11 +4,13 @@ import bcl2fastq_pipeline.getConfig
 import sys
 import pandas as pd
 import os
+import subprocess
 
 HELP_MESSAGE = """
 flowcell_manager.py usage \n
 \n
 flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
+flowcell_manager.py delete-fowcell flowcell-path --- deletes the flowcell and all containing projects\n
 flowcell_manager.py list --- lists all projects in inventory file \n
 flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
 flowcell_manager.py list-flowcell flowcell-paht --- lists all occurences of a specific flowcell-path \n
@@ -34,6 +36,29 @@ def add_flowcell(project,path,timestamp):
             columns = ['project','flowcell_path','timestamp'],
             )
 
+
+def delete_flowcell(flowcell):
+    config = bcl2fastq_pipeline.getConfig.getConfig()
+    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    fc_for_deletion = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
+    if not fc_for_deletion:
+        print("No such flowcell in inventory!")
+        return
+    print("Please confirm deletion of the following flowcell and the contained projects.\n")
+    print(fc_for_deletion)
+    confirm = input("Delete? (yes/no)")
+    if confirm == 'yes':
+        cmd = "rm -rf {}".format(flowcell)
+        print("DELETING FLOWCELL: {}".format(cmd))
+        subprocess.check_call(cmd, shell=True)
+        flowcells_processed = flowcells_processed.loc[flowcells_processed['flowcell_path'] != flowcell]
+        flowcells_processed.to_csv(
+            os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'),
+            index=False,
+            columns = ['project','flowcell_path','timestamp'],
+            )
+ 
+
 def list_project(project):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
@@ -49,6 +74,8 @@ def main(argv):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     if argv[0] == 'add':
         add_flowcell(*argv[1:])
+    elif argv[0] == 'delete-flowcell':
+        delete_flowcell(*argv[1:])
     elif argv[0] == 'list':
         df = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
         print(df)
