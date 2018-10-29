@@ -17,6 +17,9 @@ flowcell_manager.py list-flowcell flowcell-paht --- lists all occurences of a sp
 flowcell_manager.py help --- print this message \n
 """
 
+pd.set_option('display.max_rows', 5000)
+pd.set_option('display.max_columns', 500)
+
 def add_flowcell(project,path,timestamp):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     row_list = [
