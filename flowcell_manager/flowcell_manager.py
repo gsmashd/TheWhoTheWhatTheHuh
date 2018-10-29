@@ -87,7 +87,7 @@ def list_flowcell_all(flowcell):
 
 def pretty_print(df):
     print("Project \t Flowcell path \t Timestamp")
-    for i, row in df.iteritems():
+    for i, row in df.iterrows():
         print("{}\t{}\t{}".format(row['project'], row['flowcell_path'], row['timestamp']))
 
 def main(argv):
