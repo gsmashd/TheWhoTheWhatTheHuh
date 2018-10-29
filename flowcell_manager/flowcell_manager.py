@@ -17,8 +17,13 @@ def add_flowcell(project,path,timestamp):
     
     df = pd.DataFrame(row_list)
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    flowcell_processed = flowcells_processed.append(df)
-    flowcells_processed.to_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    flowcells_processed = flowcells_processed.append(df)
+    flowcells_processed.to_csv(
+            os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'),
+            index=False,
+            columns = ['project','flowcell_path','timestamp'],
+            )
+
 
 def main(argv):
 
