@@ -65,12 +65,12 @@ def delete_flowcell(flowcell):
 def list_project(project):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    return flowcells_processed.loc[flowcells_processed['project'] == project && flowcells_processed['timestamp'] != 0]
+    return flowcells_processed.loc[(flowcells_processed['project'] == project) & (flowcells_processed['timestamp'] != 0)]
 
 def list_flowcell(flowcell):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    return flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell && flowcells_processed['timestamp'] != 0]
+    return flowcells_processed.loc[(flowcells_processed['flowcell_path'] == flowcell) & (flowcells_processed['timestamp'] != 0)]
 
 def list_flowcell_all(flowcell):
     #USED TO AVOID RUNNING OLD FLOWCELLS
