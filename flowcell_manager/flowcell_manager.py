@@ -65,12 +65,18 @@ def delete_flowcell(flowcell):
 def list_project(project):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    print(flowcells_processed.loc[flowcells_processed['project'] == project])
+    return flowcells_processed.loc[flowcells_processed['project'] == project && flowcells_processed['timestamp'] != 0]
 
 def list_flowcell(flowcell):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    print(flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell])
+    return flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell && flowcells_processed['timestamp'] != 0]
+
+def list_flowcell_all(flowcell):
+    #USED TO AVOID RUNNING OLD FLOWCELLS
+    config = bcl2fastq_pipeline.getConfig.getConfig()
+    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    return flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
 
 def main(argv):
 
@@ -83,9 +89,11 @@ def main(argv):
         df = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
         print(df)
     elif argv[0] == 'list-project':
-        list_project(argv[1])
+        print(list_project(argv[1]))
     elif argv[0] == 'list-flowcell':
-        list_flowcell(argv[1])
+        print(list_flowcell(argv[1]))
+    elif argv[0] == 'list-flowcell-all':
+        print(list_flowcell_all(argv[1]))
     elif argv[0] == 'help':
         print(HELP_MESSAGE)
     else:

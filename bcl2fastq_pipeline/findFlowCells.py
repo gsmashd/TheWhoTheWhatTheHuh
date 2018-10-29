@@ -12,6 +12,7 @@ import glob
 from email.mime.text import MIMEText
 import syslog
 import xml.etree.ElementTree as ET
+import flowcell_manager.flowcell_manager as fm
 
 
 #Returns True on processed, False on unprocessed
@@ -20,8 +21,11 @@ def flowCellProcessed(config) :
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
+    flowcells = fm.list_flowcell_all(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")))
     path = "%s/%s%s/fastq.made" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)
-    if os.access(path, os.F_OK):
+    if os.access(path, os.F_Ok):
+        return True
+    elif not flowcell.empty
         return True
     return False
 
