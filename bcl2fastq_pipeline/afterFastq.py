@@ -20,6 +20,8 @@ import matplotlib.image as img
 import yaml
 import json
 import re
+import datetime as dt
+import flowcell_manager.flowcell_manager as fm
 '''
 Do we really need the md5sum?
 '''
@@ -437,6 +439,13 @@ def clumpify_mark_done(project_dirs):
     for d in project_dirs:
         open(os.path.join(d,"clumpify.done"),"w+").close()
 
+def get_project_names(dirs):
+    gcf = set()
+    for d in dirs:
+        for catalog in d.split('/'):
+            if catalog.startswith('GCF-'):
+                gcf.add(catalog)
+    return gcf
 
 #All steps that should be run after `make` go here
 def postMakeSteps(config) :
@@ -529,5 +538,10 @@ def postMakeSteps(config) :
     #save configfile to flowcell
     with open(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),'bcl2fastq.ini'), 'w+') as configfile:
         config.write(configfile)
+
+    project_names = get_project_names(projectDirs)
+    now = dt.datetime.now()
+    for gcf in project_names:
+        fm.add_flowcell(gcf,os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),now)
 
     return(message)
