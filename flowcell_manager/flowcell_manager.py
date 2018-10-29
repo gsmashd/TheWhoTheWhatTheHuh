@@ -37,21 +37,21 @@ def add_flowcell(project,path,timestamp):
 def list_project(project):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    flowcells_processed.loc[flowcells_processed['project'] == project]
+    print(flowcells_processed.loc[flowcells_processed['project'] == project])
 
 def list_project(flowcell):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
+    print(flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell])
 
 def main(argv):
 
     config = bcl2fastq_pipeline.getConfig.getConfig()
-    print(argv)
     if argv[0] == 'add':
         add_flowcell(*argv[1:])
     elif argv[0] == 'list':
-        pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+        df = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+        print(df)
     elif argv[0] == 'list-project':
         list_project(argv[1])
     elif argv[0] == 'list-flowcell':
