@@ -41,7 +41,7 @@ def delete_flowcell(flowcell):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     fc_for_deletion = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
-    if not fc_for_deletion:
+    if fc_for_deletion.empty:
         print("No such flowcell in inventory!")
         return
     print("Please confirm deletion of the following flowcell and the contained projects.\n")
