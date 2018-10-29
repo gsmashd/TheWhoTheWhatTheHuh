@@ -39,7 +39,7 @@ def list_project(project):
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     print(flowcells_processed.loc[flowcells_processed['project'] == project])
 
-def list_project(flowcell):
+def list_flowcell(flowcell):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     print(flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell])
