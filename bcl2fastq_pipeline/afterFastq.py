@@ -525,4 +525,9 @@ def postMakeSteps(config) :
     message = "Current free space: %i of %i gigs (%5.2f%%)\n" % (
         free,tot,100*free/tot)
     message += undeter
+
+    #save configfile to flowcell
+    with open(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),'bcl2fastq.ini'), 'w+') as configfile:
+        config.write(configfile)
+
     return(message)

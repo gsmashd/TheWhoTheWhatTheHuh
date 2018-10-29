@@ -5,14 +5,27 @@ import sys
 import pandas as pd
 import os
 
-
+def add_flowcell(project,path,timestamp):
+    config = bcl2fastq_pipeline.getConfig.getConfig()
+    row_list = [
+            {
+            'project': project,
+            'flowcell_path': path,
+            'timestamp': timestamp,
+            }
+            ]
+    
+    df = pd.DataFrame(row_list)
+    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    flowcell_processed = flowcells_processed.append(df)
+    flowcells_processed.to_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
 
 def main(argv):
 
     print(argv)
     config = bcl2fastq_pipeline.getConfig.getConfig()
-    manager_base = config.get("FlowCellManager","managerDir")
-    flowcells_processed = pd.read_csv(os.path.join(manager_base,'flowcells.processed'), skiprows=1)
+
+    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     print(flowcells_processed)
 
 
