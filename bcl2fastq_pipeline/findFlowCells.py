@@ -111,9 +111,9 @@ def reformatSS(rv):
         laneOut = None
 
     opts = {
-            'SingleCell': rv.get('SingleCell', False)
-            'RemoveHumanReads': rv.get('RemoveHumanReads', False)
-            'SensitiveData': rv.get('SensitiveData', False)
+            'SingleCell': rv.get('SingleCell', False),
+            'RemoveHumanReads': rv.get('RemoveHumanReads', False),
+            'SensitiveData': rv.get('SensitiveData', False),
             }
     return ss, laneOut, bcLens, opts
 
