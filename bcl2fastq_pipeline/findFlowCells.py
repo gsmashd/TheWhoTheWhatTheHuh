@@ -97,7 +97,7 @@ def reformatSS(rv):
     nLanes = 0
 
     for k, v in rv.items():
-        if k in ['SingleCell','Decontaminate']:
+        if k in ['SingleCell','Decontaminate','SensitiveData']:
             continue
         ss.append("\n".join(v[0]))
         lanes = ""
@@ -109,8 +109,13 @@ def reformatSS(rv):
 
     if len(ss) < 2 and nLanes == 8:
         laneOut = None
-    return ss, laneOut, bcLens, rv.get('SingleCell', False), rv.get('Decontaminate', False)
 
+    opts = {
+            'SingleCell': rv.get('SingleCell', False)
+            'RemoveHumanReads': rv.get('RemoveHumanReads', False)
+            'SensitiveData': rv.get('SensitiveData', False)
+            }
+    return ss, laneOut, bcLens, opts
 
 def parseSampleSheet(ss):
     """
@@ -136,11 +141,13 @@ def parseSampleSheet(ss):
     for line in f:
         bcLen = '0,0'
         if inData is False:
-            if line.startswith("Description,SingleCell"):
+            if line.startswith("SingleCell"):
                 rv["SingleCell"]=True
                 continue
-            if line.startswith("Decontaminate,Human"):
-                rv["Decontaminate"]=True
+            if line.startswith("RemoveHumanReads"):
+                rv["RemoveHumanReads"]=True
+            if line.startswith("SensitiveData"):
+                rv["SensitiveData"]=True
                 continue
             if line.startswith("[Data]"):
                 inData = True
@@ -202,7 +209,7 @@ def getSampleSheets(d):
     bcLens = []
     ssUse = []
     for sheet in ss:
-        ss_, laneOut_, bcLens_, singleCell, decontaminate = parseSampleSheet(sheet)
+        ss_, laneOut_, bcLens_, opts = parseSampleSheet(sheet)
         nSS = 0
         if ss_ is not None and len(ss_) > 0:
             ssUse.extend(ss_)
@@ -216,7 +223,7 @@ def getSampleSheets(d):
         elif nSS > 0:
             bcLens.extend([None] * nSS)
 
-    return ssUse, laneOut, bcLens, singleCell, decontaminate
+    return ssUse, laneOut, bcLens, opts
 
 
 '''
@@ -248,7 +255,7 @@ def newFlowCell(config) :
         config.set('Options','runID',d.split("/")[-2])
         config.set('Options', 'sequencer',d.split("/")[-4])
 
-        sampleSheet, lanes, bcLens, singleCell, decontaminate = getSampleSheets(os.path.dirname(d))
+        sampleSheet, lanes, bcLens, opts = getSampleSheets(os.path.dirname(d))
 
         for ss, lane, bcLen in zip(sampleSheet, lanes, bcLens):
             config.set('Options','runID',d.split("/")[-2])
@@ -273,30 +280,33 @@ def newFlowCell(config) :
                     os.makedirs(odir)
                 if ss is not None and not os.path.exists("{}/SampleSheet.csv".format(odir)):
                     o = open("{}/SampleSheet.csv".format(odir), "w")
-                    if singleCell:
+                    if opts['SingleCell']:
                         ss = 'SingleCell\n{}'.format(ss)
-                    if decontaminate:
-                        ss = 'Decontaminate\n{}'.format(ss)
-                    if singleCell or decontaminate:
+                    if opts['RemoveHumanReads']:
+                        ss = 'RemoveHumanReads\n{}'.format(ss)
+                    if opts['SensitiveData']:
+                        ss = 'SensitiveData\n{}'.format(ss)
+                    if opts['SingleCell'] or opts['RemoveHumanReads'] or opts['SensitiveData']:
                         ss = '[Header]\n{}'.format(ss)
                     o.write(ss)
                     o.close()
                     ss = "{}/SampleSheet.csv".format(odir)
                 config.set("Options","sampleSheet",ss)
-                singleCellConf = "1" if singleCell else "0"
-                config.set("Options","singleCell",singleCellConf)
-                decontaminateConf = "1" if decontaminate else "0"
-                config.set("Options","decontaminate",decontaminateConf)
+                config.set("Options","SingleCell","1" if opts['SingleCell'] else "0")
+                config.set("Options","RemoveHumanReads","1" if opts['RemoveHumanReads'] else "0")
+                config.set("Options","SensitiveData","1" if opts['SensitiveData'] else "0")
                 return config
             else :
                 config.set("Options","runID","")
                 config.set("Options","sequencer","")
-                config.set("Options","singleCell","")
-                config.set("Options","decontaminate","")
+                config.set("Options","SingleCell","")
+                config.set("Options","RemoveHumanReads","")
+                config.set("Options","SensitiveData","")
     config.set("Options","runID","")
     config.set("Options","sequencer","")
-    config.set("Options","singleCell","")
-    config.set("Options","decontaminate","")
+    config.set("Options","SingleCell","")
+    config.set("Options","RemoveHumanReads","")
+    config.set("Options","SensitiveData","")
     return config
 
 

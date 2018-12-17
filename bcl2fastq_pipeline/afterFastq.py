@@ -50,7 +50,7 @@ def clumpify_worker(fname):
     global localConfig
     config = localConfig
 
-    if config.get("Options","singleCell") == "1":
+    if config.get("Options","SingleCell") == "1":
         return
 
     #We use R1 files to construct R2 filenames for paired end
@@ -88,7 +88,7 @@ def clumpify_worker(fname):
     if r2:
         os.rename(out_r2,r2)
 
-def decontaminate_worker(fname):
+def RemoveHumanReads_worker(fname):
     global localConfig
     config = localConfig
 
@@ -131,7 +131,7 @@ def decontaminate_worker(fname):
                 contaminated_out = fname.replace(os.path.basename(fname),"contaminated/{}".format(os.path.basename(fname)))
                 )
 
-    syslog.syslog("[decontaminate_worker] Processing %s\n" % cmd)
+    syslog.syslog("[RemoveHumanReads_worker] Processing %s\n" % cmd)
     subprocess.check_call(cmd, shell=True)
     # clean up
     os.remove(fname)
@@ -145,7 +145,7 @@ def decontaminate_worker(fname):
                 out_r1 = fname,
                 out_r2 = r2
                 )
-        syslog.syslog("[decontaminate_worker] De-interleaving %s\n" % cmd)
+        syslog.syslog("[RemoveHumanReads_worker] De-interleaving %s\n" % cmd)
         subprocess.check_call(cmd, shell=True)
         os.remove(fname.replace("R1.fastq.gz","interleaved.fastq.gz"))
         #De-interleave contaminated file
@@ -156,7 +156,7 @@ def decontaminate_worker(fname):
                 out_r1 = cont_out.replace("interleaved.fastq.gz","R1.fastq.gz"),
                 out_r2 = cont_out.replace("interleaved.fastq.gz","R2.fastq.gz")
                 )
-        syslog.syslog("[decontaminate_worker] De-interleaving %s\n" % cmd)
+        syslog.syslog("[RemoveHumanReads_worker] De-interleaving %s\n" % cmd)
         subprocess.check_call(cmd, shell=True)
         os.remove(cont_out)
 
@@ -168,9 +168,9 @@ def fastq_screen_worker(fname) :
     os.chdir(os.path.dirname(fname))
 
     #Skip read 2 when not single cell, skip if read 1 when single cell
-    if config.get("Options","singleCell") == '0' and ("R2.fastq" in fname or "R2_001.fastq" in fname):
+    if config.get("Options","SingleCell") == '0' and ("R2.fastq" in fname or "R2_001.fastq" in fname):
         return
-    elif config.get("Options","singleCell") == '1' and ("R1.fastq" in fname or "R1_001.fastq" in fname):
+    elif config.get("Options","SingleCell") == '1' and ("R1.fastq" in fname or "R1_001.fastq" in fname):
         return
 
     ofile="{}/fastq_screen/{}".format(
@@ -201,7 +201,7 @@ def suprDUPr_worker(fname) :
     global localConfig
     config = localConfig
 
-    if config.get("Options","singleCell") == "1":
+    if config.get("Options","SingleCell") == "1":
         return
 
     ofname = "{}/filtered/{}".format(os.path.dirname(fname),os.path.basename(fname).replace(".fastq.gz","_filtered.fastq.gz"))
@@ -483,9 +483,9 @@ def postMakeSteps(config) :
     p.join()
     """
     #Decontaminate with masked genome
-    if config.get("Options","decontaminate") == "1":
+    if config.get("Options","RemoveHumanReads") == "1":
         p = mp.Pool(int(1))
-        p.map(decontaminate_worker, sampleFiles)
+        p.map(RemoveHumanReads_worker, sampleFiles)
         p.close()
         p.join()
     
