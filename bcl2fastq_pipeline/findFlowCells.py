@@ -23,7 +23,7 @@ def flowCellProcessed(config) :
 
     flowcells = fm.list_flowcell_all(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")))
     path = "%s/%s%s/fastq.made" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)
-    if os.access(path, os.F_Ok):
+    if os.access(path, os.F_OK):
         return True
     elif not flowcell.empty:
         return True
