@@ -53,7 +53,7 @@ def delete_flowcell(args,force=False):
     if fc_for_deletion.empty:
         print("No such flowcell in inventory!")
         return
-    confirm == 'yes'
+    confirm = 'yes'
     if not force:
         print("Please confirm deletion of the following flowcell and the contained projects.\n")
         print(fc_for_deletion)
