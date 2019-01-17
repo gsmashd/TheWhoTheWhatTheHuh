@@ -10,7 +10,7 @@ HELP_MESSAGE = """
 flowcell_manager.py usage \n
 \n
 flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
-flowcell_manager.py delete-fowcell flowcell-path --- deletes the flowcell and all containing projects\n
+flowcell_manager.py delete-fowcell flowcell-path --- deletes the flowcell and all containing projects\n\t\t use with --force to omit prompt\n
 flowcell_manager.py list --- lists all processed projects in inventory file \n
 flowcell_manager.py list-all --- lists all projects in inventory file (also unprocessed)\n
 flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
@@ -42,7 +42,11 @@ def add_flowcell(project,path,timestamp):
             )
 
 
-def delete_flowcell(flowcell):
+def delete_flowcell(args,force=False):
+    if '--force' in args:
+        force = True
+        args.remove('--force')
+    flowcell = args[0]
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     fc_for_deletion = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
