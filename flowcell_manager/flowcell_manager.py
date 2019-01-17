@@ -53,9 +53,11 @@ def delete_flowcell(args,force=False):
     if fc_for_deletion.empty:
         print("No such flowcell in inventory!")
         return
-    print("Please confirm deletion of the following flowcell and the contained projects.\n")
-    print(fc_for_deletion)
-    confirm = input("Delete? (yes/no)")
+    confirm == 'yes'
+    if not force:
+        print("Please confirm deletion of the following flowcell and the contained projects.\n")
+        print(fc_for_deletion)
+        confirm = input("Delete? (yes/no)")
     if confirm == 'yes':
         cmd = "rm -rf {}".format(flowcell)
         print("DELETING FLOWCELL: {}".format(cmd))
@@ -100,7 +102,7 @@ def main(argv):
     if argv[0] == 'add':
         add_flowcell(*argv[1:])
     elif argv[0] == 'delete-flowcell':
-        delete_flowcell(*argv[1:])
+        delete_flowcell(argv[1:])
     elif argv[0] == 'list':
         pretty_print(list_processed())
     elif argv[0] == 'list-all':
