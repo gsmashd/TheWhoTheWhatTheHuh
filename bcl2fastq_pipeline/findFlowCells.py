@@ -326,6 +326,7 @@ def newFlowCell(config) :
                     if opts['SingleCell'] or opts['RemoveHumanReads'] or opts['SensitiveData']:
                         ss = '[Header]\n{}'.format(ss)
                     """
+                    ss = '[Header]\n{}'.format(ss)
                     o.write(ss)
                     o.close()
                     ss = "{}/SampleSheet.csv".format(odir)
