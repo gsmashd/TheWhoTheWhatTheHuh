@@ -15,6 +15,9 @@ import xml.etree.ElementTree as ET
 import flowcell_manager.flowcell_manager as fm
 
 
+CUSTOM_OPTS = ['Organism', 'Libprep', 'SingleCell','RemoveHumanReads','SensitiveData']
+
+
 #Returns True on processed, False on unprocessed
 def flowCellProcessed(config) :
     lanes = config.get("Options", "lanes")
@@ -89,16 +92,15 @@ def formatLine(cols, colLabs, indexCols, storeLanes, rcI5=False):
     return ",".join(l)
 
 
-def reformatSS(rv):
+def reformatSS(rv,opts):
     """This is used in parseSampleSheet to reformat the output for upstream use"""
     ss = []
     laneOut = []
     bcLens = []
     nLanes = 0
+    #opts = {}
 
     for k, v in rv.items():
-        if k in ['SingleCell','Decontaminate','SensitiveData']:
-            continue
         ss.append("\n".join(v[0]))
         lanes = ""
         if len(v[1]) > 0:
@@ -109,12 +111,15 @@ def reformatSS(rv):
 
     if len(ss) < 2 and nLanes == 8:
         laneOut = None
-
+    """
     opts = {
+            'Organism': rv.get('Organism',False),
+            'Libprep': rv.get('Libprep',False),
             'SingleCell': rv.get('SingleCell', False),
             'RemoveHumanReads': rv.get('RemoveHumanReads', False),
             'SensitiveData': rv.get('SensitiveData', False),
             }
+    """
     return ss, laneOut, bcLens, opts
 
 def parseSampleSheet(ss):
@@ -124,7 +129,6 @@ def parseSampleSheet(ss):
     return ss, laneOut, bcLens
     """
     rv = dict()
-    
     # If this is a NextSeq or a HiSeq 2500 rapid run, then don't store the incorrect Lane column
     storeLanes = True
     if getNumLanes(os.path.dirname(ss)) < 8:
@@ -138,21 +142,35 @@ def parseSampleSheet(ss):
     lastLine = None
     colLabs = [None, None, None, None] # Lane, Sample_ID, Sample_Name, Sample_Project
     indexCols = [None, None] # index, index2
+    #custom_opts = ['Organism', 'Libprep', 'SingleCell','RemoveHumanReads','SensitiveData']
+    opt_d = dict.fromkeys(CUSTOM_OPTS,False)
+    opts_data = False
     for line in f:
         bcLen = '0,0'
-        if inData is False:
+        if opts_data:
+            key = line.split(',')[0]
+            value = line.split(',')[-1]
+            opt_d[key] = value if key in ['Organism','Libprep'] else str2bool(value)
+            """
+            if line.startswith("Organism"):
+                rv["Organism"] = line.split(",")[-1]
+                continue
+            if line.startswith("Libprep"):
+                rv["Libprep"] = line.split(",")[-1]
             if line.startswith("SingleCell"):
                 rv["SingleCell"]=True
                 continue
             if line.startswith("RemoveHumanReads"):
                 rv["RemoveHumanReads"]=True
+                continue
             if line.startswith("SensitiveData"):
                 rv["SensitiveData"]=True
                 continue
+            """
             if line.startswith("[Data]"):
                 inData = True
                 continue
-        else:
+        elif inData:
             cols = line.strip().split(",")
             if lastLine is True:
                 if indexCols[0] is not None:
@@ -192,8 +210,17 @@ def parseSampleSheet(ss):
                 if "Sample_Project" in cols:
                     colLabs[3] = cols.index("Sample_Project")
                 continue
+        elif line.startswith("[CustomOptions]"):
+            opts_data = True
+            continue
+        elif line.startswith("[Data]"):
+            inData = True
+            continue
+    #rv.update(opts_d)
+    return reformatSS(rv,opts_d)
 
-    return reformatSS(rv)
+def str2bool(s):
+    return s.lower() in ['true','1']
 
 
 def getSampleSheets(d):
@@ -280,6 +307,15 @@ def newFlowCell(config) :
                     os.makedirs(odir)
                 if ss is not None and not os.path.exists("{}/SampleSheet.csv".format(odir)):
                     o = open("{}/SampleSheet.csv".format(odir), "w")
+                    for k,v in opts.items():
+                        ss = '{},{}\n{}'.format(k,v,ss)
+                        """
+                        if k in ['Organism','Libprep']:
+                            ss = '{},{}\n{}'.format(k,v,ss)
+                        else:
+                            ss = '{}\n{}'.format(k,ss)
+                        """
+                    """
                     if opts['SingleCell']:
                         ss = 'SingleCell\n{}'.format(ss)
                     if opts['RemoveHumanReads']:
@@ -288,25 +324,59 @@ def newFlowCell(config) :
                         ss = 'SensitiveData\n{}'.format(ss)
                     if opts['SingleCell'] or opts['RemoveHumanReads'] or opts['SensitiveData']:
                         ss = '[Header]\n{}'.format(ss)
+                    """
                     o.write(ss)
                     o.close()
                     ss = "{}/SampleSheet.csv".format(odir)
                 config.set("Options","sampleSheet",ss)
-                config.set("Options","SingleCell","1" if opts['SingleCell'] else "0")
-                config.set("Options","RemoveHumanReads","1" if opts['RemoveHumanReads'] else "0")
-                config.set("Options","SensitiveData","1" if opts['SensitiveData'] else "0")
+                """
+                config.set("Options","SingleCell","1" if opts.get('SingleCell',False) else "0")
+                config.set("Options","RemoveHumanReads","1" if opts.get('RemoveHumanReads',False) else "0")
+                config.set("Options","SensitiveData","1" if opts.get('SensitiveData',False) else "0")
+                config.set("Options","Organism",opts.get("Organism","N/A"))
+                config.set("Options","Libprep",opts.get("Libprep","N/A"))
+                """
+                config = setConfFromOpts(config,opts,use_dict_values)
+                """
+                for k,v in opts.items():
+                    if k in ['Orgnaism','Libprep']:
+                        config.set("Options",k,v)
+                    else:
+                        config.set("Options",k,bool2strint(v))
+                """
                 return config
             else :
                 config.set("Options","runID","")
                 config.set("Options","sequencer","")
+                config = setConfFromOpts(config,opts,use_dict_values=False)
+                """
                 config.set("Options","SingleCell","")
                 config.set("Options","RemoveHumanReads","")
                 config.set("Options","SensitiveData","")
+                config.set("Options","Organism",""))
+                config.set("Options","Libprep",""))
+                """
     config.set("Options","runID","")
     config.set("Options","sequencer","")
+    config = setConfFromOpts(config,opts,use_dict_values=False)
+    """
     config.set("Options","SingleCell","")
     config.set("Options","RemoveHumanReads","")
     config.set("Options","SensitiveData","")
+    config.set("Options","Organism",""))
+    config.set("Options","Libprep",""))
+    """
+    return config
+
+def bool2strint(b):
+    return '1' if b else '0'
+
+def setConfFromOpts(config,opts,use_dict_values=True):
+    for k,v in opts.items():
+        if use_dict_values:
+            config.set("Options",k,v if v in ['Organism','Libprep'] else bool2strint(v))
+        else:
+            config.set("Options",k,"")
     return config
 
 
