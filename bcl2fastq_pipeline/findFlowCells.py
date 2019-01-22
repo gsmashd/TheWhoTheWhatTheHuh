@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 import flowcell_manager.flowcell_manager as fm
 
 
-CUSTOM_OPTS = ['Organism', 'Libprep', 'SingleCell','RemoveHumanReads','SensitiveData']
+CUSTOM_OPTS = ['Organism', 'Libprep', 'SingleCell','RemoveHumanReads','SensitiveData','ReverseComplementIndexP5','ReverseComplementIndexP7','TrimAdapter']
 
 
 #Returns True on processed, False on unprocessed
