@@ -111,15 +111,6 @@ def reformatSS(rv,opts):
 
     if len(ss) < 2 and nLanes == 8:
         laneOut = None
-    """
-    opts = {
-            'Organism': rv.get('Organism',False),
-            'Libprep': rv.get('Libprep',False),
-            'SingleCell': rv.get('SingleCell', False),
-            'RemoveHumanReads': rv.get('RemoveHumanReads', False),
-            'SensitiveData': rv.get('SensitiveData', False),
-            }
-    """
     return ss, laneOut, bcLens, opts
 
 def parseSampleSheet(ss):
@@ -158,26 +149,6 @@ def parseSampleSheet(ss):
             key = line.split(',')[0]
             value = line.split(',')[-1]
             opt_d[key] = value.rstrip() if key in ['Organism','Libprep'] else str2bool(value)
-            """
-            if line.startswith("Organism"):
-                rv["Organism"] = line.split(",")[-1]
-                continue
-            if line.startswith("Libprep"):
-                rv["Libprep"] = line.split(",")[-1]
-            if line.startswith("SingleCell"):
-                rv["SingleCell"]=True
-                continue
-            if line.startswith("RemoveHumanReads"):
-                rv["RemoveHumanReads"]=True
-                continue
-            if line.startswith("SensitiveData"):
-                rv["SensitiveData"]=True
-                continue
-            if line.startswith("[Data]"):
-                opts_data=False
-                inData = True
-                continue
-            """
         elif inData:
             cols = line.strip().split(",")
             if lastLine is True:
@@ -317,64 +288,20 @@ def newFlowCell(config) :
                     o = open("{}/SampleSheet.csv".format(odir), "w")
                     for k,v in opts.items():
                         ss = '{},{}\n{}'.format(k,v,ss)
-                        """
-                        if k in ['Organism','Libprep']:
-                            ss = '{},{}\n{}'.format(k,v,ss)
-                        else:
-                            ss = '{}\n{}'.format(k,ss)
-                        """
-                    """
-                    if opts['SingleCell']:
-                        ss = 'SingleCell\n{}'.format(ss)
-                    if opts['RemoveHumanReads']:
-                        ss = 'RemoveHumanReads\n{}'.format(ss)
-                    if opts['SensitiveData']:
-                        ss = 'SensitiveData\n{}'.format(ss)
-                    if opts['SingleCell'] or opts['RemoveHumanReads'] or opts['SensitiveData']:
-                        ss = '[Header]\n{}'.format(ss)
-                    """
                     ss = '[Header]\n{}'.format(ss)
                     o.write(ss)
                     o.close()
                     ss = "{}/SampleSheet.csv".format(odir)
                 config.set("Options","sampleSheet",ss)
-                """
-                config.set("Options","SingleCell","1" if opts.get('SingleCell',False) else "0")
-                config.set("Options","RemoveHumanReads","1" if opts.get('RemoveHumanReads',False) else "0")
-                config.set("Options","SensitiveData","1" if opts.get('SensitiveData',False) else "0")
-                config.set("Options","Organism",opts.get("Organism","N/A"))
-                config.set("Options","Libprep",opts.get("Libprep","N/A"))
-                """
                 config = setConfFromOpts(config,opts)
-                """
-                for k,v in opts.items():
-                    if k in ['Orgnaism','Libprep']:
-                        config.set("Options",k,v)
-                    else:
-                        config.set("Options",k,bool2strint(v))
-                """
                 return config
             else :
                 config.set("Options","runID","")
                 config.set("Options","sequencer","")
                 config = setConfFromOpts(config,opts,use_dict_values=False)
-                """
-                config.set("Options","SingleCell","")
-                config.set("Options","RemoveHumanReads","")
-                config.set("Options","SensitiveData","")
-                config.set("Options","Organism",""))
-                config.set("Options","Libprep",""))
-                """
     config.set("Options","runID","")
     config.set("Options","sequencer","")
     config = setConfFromOpts(config,opts,use_dict_values=False)
-    """
-    config.set("Options","SingleCell","")
-    config.set("Options","RemoveHumanReads","")
-    config.set("Options","SensitiveData","")
-    config.set("Options","Organism",""))
-    config.set("Options","Libprep",""))
-    """
     return config
 
 def bool2strint(b):
