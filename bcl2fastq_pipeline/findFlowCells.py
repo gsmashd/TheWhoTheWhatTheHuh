@@ -288,7 +288,7 @@ def newFlowCell(config) :
                     o = open("{}/SampleSheet.csv".format(odir), "w")
                     for k,v in opts.items():
                         ss = '{},{}\n{}'.format(k,v,ss)
-                    ss = '[Header]\n{}'.format(ss)
+                    ss = '[CustomOptions]\n{}'.format(ss)
                     o.write(ss)
                     o.close()
                     ss = "{}/SampleSheet.csv".format(odir)
