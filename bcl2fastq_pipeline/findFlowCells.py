@@ -147,10 +147,17 @@ def parseSampleSheet(ss):
     opts_data = False
     for line in f:
         bcLen = '0,0'
-        if opts_data:
+        if line.startswith("[Data]"):
+            opts_data=False
+            inData = True
+            continue
+        elif line.startswith("[CustomOptions]"):
+            opts_data = True
+            continue
+        elif opts_data:
             key = line.split(',')[0]
             value = line.split(',')[-1]
-            opt_d[key] = value if key in ['Organism','Libprep'] else str2bool(value)
+            opt_d[key] = value.rstrip() if key in ['Organism','Libprep'] else str2bool(value)
             """
             if line.startswith("Organism"):
                 rv["Organism"] = line.split(",")[-1]
@@ -166,11 +173,11 @@ def parseSampleSheet(ss):
             if line.startswith("SensitiveData"):
                 rv["SensitiveData"]=True
                 continue
-            """
             if line.startswith("[Data]"):
                 opts_data=False
                 inData = True
                 continue
+            """
         elif inData:
             cols = line.strip().split(",")
             if lastLine is True:
