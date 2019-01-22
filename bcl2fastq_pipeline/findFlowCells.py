@@ -168,6 +168,7 @@ def parseSampleSheet(ss):
                 continue
             """
             if line.startswith("[Data]"):
+                opts_data=False
                 inData = True
                 continue
         elif inData:
@@ -211,7 +212,7 @@ def parseSampleSheet(ss):
                     colLabs[3] = cols.index("Sample_Project")
                 continue
         elif line.startswith("[CustomOptions]"):
-            opt_data = True
+            opts_data = True
             continue
         elif line.startswith("[Data]"):
             inData = True
