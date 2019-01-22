@@ -211,13 +211,13 @@ def parseSampleSheet(ss):
                     colLabs[3] = cols.index("Sample_Project")
                 continue
         elif line.startswith("[CustomOptions]"):
-            opts_data = True
+            opt_data = True
             continue
         elif line.startswith("[Data]"):
             inData = True
             continue
     #rv.update(opts_d)
-    return reformatSS(rv,opts_d)
+    return reformatSS(rv,opt_d)
 
 def str2bool(s):
     return s.lower() in ['true','1']
