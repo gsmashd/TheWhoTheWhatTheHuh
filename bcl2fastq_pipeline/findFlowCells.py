@@ -338,7 +338,7 @@ def newFlowCell(config) :
                 config.set("Options","Organism",opts.get("Organism","N/A"))
                 config.set("Options","Libprep",opts.get("Libprep","N/A"))
                 """
-                config = setConfFromOpts(config,opts,use_dict_values)
+                config = setConfFromOpts(config,opts)
                 """
                 for k,v in opts.items():
                     if k in ['Orgnaism','Libprep']:
