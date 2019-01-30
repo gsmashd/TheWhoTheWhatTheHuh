@@ -260,6 +260,8 @@ def newFlowCell(config) :
         #Get the flow cell ID (e.g., 150416_SN7001180_0196_BC605HACXX)
         config.set('Options','runID',d.split("/")[-2])
         config.set('Options', 'sequencer',d.split("/")[-4])
+        if flowCellProcessed(config):
+            continue
 
         sampleSheet, lanes, bcLens, opts = getSampleSheets(os.path.dirname(d))
 
