@@ -61,65 +61,6 @@ def determineMask(config):
             return "--use-bases-mask {} {}".format(",".join(l), lanes)
     return lanes
 
-def rewriteSampleSheet(config) :
-    '''
-    If it exists, make a modified copy of the sample sheet to ensure that:
-     A) It contains no special characters
-     B) It contains no adapter sequences (so adapter trimming is disabled
-    An appropriate "--sample-sheet blah --use-bases-mask foo" is returned
-    '''
-
-    ssheet = config.get("Options", "sampleSheet")
-    if ssheet is None or ssheet == "":
-        ssheet = "%s/%s/SampleSheet.csv" % (config.get("Paths", "baseDir"), config.get("Options", "runID"))
-
-    if os.path.isfile(ssheet):
-        od, oname = tempfile.mkstemp()
-        config.set("Options", "sampleSheet", oname)
-        of = open(oname, "w")
-        inData = False
-        inReads = 0
-        for line in codecs.open(ssheet, "r", "iso-8859-1"):
-            if((line.startswith("Lane") or line.startswith("Sample_ID")) and (inData is False)) :
-                inData = True
-            elif(line.startswith("[Reads]")) :
-                inReads = 1
-            elif(inReads == 1) :
-                inReads = 2
-            elif(inReads==2) :
-                inReads = 0
-            elif(inData) :
-                #' ' to _
-                line = line.replace(" ", "_")
-                #. to _dot_
-                line = line.replace(".", "_dot_")
-                #+ to _plus_
-                line = line.replace("+", "_plus_")
-                #ö to oe
-                line = line.replace("ö", "oe")
-                line = line.replace("Ö", "Oe")
-                #ä to ae
-                line = line.replace("ä", "ae")
-                line = line.replace("Ä", "Ae")
-                #ü to ue
-                line = line.replace("ü", "ue")
-                line = line.replace("Ü", "Ue")
-                #ß to sz
-                line = line.replace("ß", "sz")
-                #& to _and_
-                line = line.replace("&", "_and_")
-                #' to nothing
-                line = line.replace("'", "")
-            else :
-                if(line.startswith("Adapter")) :
-                    continue
-            of.write(line)
-        of.close()
-        os.close(od)
-        return "--sample-sheet {} {}".format(oname, determineMask(config))
-    else :
-        config.set("Options", "sampleSheet", "")
-        return None
 
 def fixNames(config) :
     lanes = config.get("Options", "lanes")
@@ -150,11 +91,6 @@ def bcl2fq(config) :
     #Make log directory
     os.makedirs("%s" % (os.path.join(config.get("Paths","logDir"),os.path.dirname(config.get("Options","runID")))), exist_ok=True)
 
-    #If there's no sample sheet then we need to not mask the last index base!
-    rv = rewriteSampleSheet(config)
-    mask = ""
-    if(rv is not None) :
-        mask = rv
     if config.get("Options","singleCell") == "1":
         cmd = "{cellranger_cmd} --output-dir={output_dir} --sample-sheet={sample_sheet} --run={run_dir} {cellranger_options}".format(
                 cellranger_cmd = config.get("cellranger","cellranger_mkfastq"),
@@ -171,10 +107,9 @@ def bcl2fq(config) :
                 cellranger_options = config.get("cellranger","cellranger_mkfastq_options")
                 )
     else:
-        cmd = "%s %s %s -o %s/%s%s -R %s/%s/data/%s " % (
+        cmd = "%s %s -o %s/%s%s -R %s/%s/data/%s " % (
             config.get("bcl2fastq","bcl2fastq"),
             config.get("bcl2fastq","bcl2fastq_options"),
-            mask,
             config.get("Paths","outputDir"),
             config.get("Options","runID"),
             lanes,
