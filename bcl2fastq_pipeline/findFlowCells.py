@@ -98,7 +98,6 @@ def reformatSS(rv,opts):
     laneOut = []
     bcLens = []
     nLanes = 0
-    #opts = {}
 
     for k, v in rv.items():
         ss.append("\n".join(v[0]))
@@ -139,9 +138,12 @@ def parseSampleSheet(ss):
     for line in f:
         bcLen = '0,0'
         if line.startswith("[Data]"):
-            opts_data=False
-            inData = True
-            continue
+            if opts_data:
+                opts_data=False
+                inData = True
+                continue
+            else:
+                return reformatSS(rv,opt_d)
         elif line.startswith("[CustomOptions]"):
             opts_data = True
             continue
@@ -264,6 +266,9 @@ def newFlowCell(config) :
             continue
 
         sampleSheet, lanes, bcLens, opts = getSampleSheets(os.path.dirname(d))
+
+        if not opts:
+            continue
 
         for ss, lane, bcLen in zip(sampleSheet, lanes, bcLens):
             config.set('Options','runID',d.split("/")[-2])
