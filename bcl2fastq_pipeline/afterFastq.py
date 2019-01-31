@@ -511,7 +511,7 @@ def postMakeSteps(config) :
     p.join()
 
     #fastq_screen
-    p = mp.Pool(int(config.get("Options", "postMakeThreads")))
+    p = mp.Pool(int(config.get("Options", "fastqScreenThreads")))
     p.map(fastq_screen_worker, sampleFiles)
     p.close()
     p.join()
