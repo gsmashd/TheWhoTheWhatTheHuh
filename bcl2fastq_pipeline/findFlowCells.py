@@ -315,6 +315,8 @@ def bool2strint(b):
     return '1' if b else '0'
 
 def setConfFromOpts(config,opts,use_dict_values=True):
+    if not opts:
+        return config
     for k,v in opts.items():
         if use_dict_values:
             config.set("Options",k,v if v in ['Organism','Libprep'] else bool2strint(v))
