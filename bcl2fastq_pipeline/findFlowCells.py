@@ -83,8 +83,8 @@ def getSampleSheets(d):
 
     for sheet in ss:
         ss_, opts = parseSampleSheet(sheet)
-        if ss and opts:
-            return ss, opts
+        if ss_ and opts:
+            return ss_, opts
     return None, None
 
 
