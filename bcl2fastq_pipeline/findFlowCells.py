@@ -211,7 +211,7 @@ def getSampleSheets(d):
     ss = glob.glob("%s/SampleSheet*.csv" % d)
 
     if len(ss) == 0:
-        return ([None], [None], [''])
+        return ([None], [None], [''],None)
 
     laneOut = []
     bcLens = []
