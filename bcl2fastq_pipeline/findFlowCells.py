@@ -125,7 +125,7 @@ def newFlowCell(config) :
             continue
 
         syslog.syslog("Found a new flow cell: %s\n" % config.get("Options","runID"))
-        odir = "{}/{}{}".format(config.get("Paths", "outputDir"), config.get("Options", "runID"), lanesUse)
+        odir = "{}/{}".format(config.get("Paths", "outputDir"), config.get("Options", "runID"))
         if not os.path.exists(odir):
             os.makedirs(odir)
         if ss is not None and not os.path.exists("{}/SampleSheet.csv".format(odir)):
