@@ -182,7 +182,7 @@ def fastq_screen_worker(fname) :
             os.path.basename(fname)
             )
 
-    if os.path.exists(ofile.replace(".fastq.gz","_screen.html")):
+    if os.path.exists(ofile.replace(".fastq.gz","_screen.html")) :
         return
     
     os.makedirs(os.path.dirname(ofile), exist_ok=True)
