@@ -486,6 +486,8 @@ def parserDemultiplexStats(config) :
 
 
 def clumpify_mark_done():
+    global localConfig
+    config = localConfig
     open(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),"clumpify.done"),"w+").close()
 
 def get_project_names(dirs):
