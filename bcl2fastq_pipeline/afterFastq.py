@@ -176,7 +176,7 @@ def fastq_screen_worker(fname) :
         return
 
     ofile="{}/{}/QC_{}/fastq_screen/{}".format(
-            os.path.join(config.get("Paths","outputDir"), 
+            os.path.join(config.get("Paths","outputDir")),
             config.get("Options","runID"),
             project_nr,
             os.path.basename(fname)
