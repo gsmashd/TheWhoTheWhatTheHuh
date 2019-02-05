@@ -57,7 +57,7 @@ def clumpify_worker(fname):
     if "R2.fastq.gz" in fname:
         return
 
-    if os.path.exists(os.path.join(os.path.dirname(fname),"clumpify.done")):
+    if os.path.exists(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),"clumpify.done")):
         return
 
     r1 = fname
@@ -167,14 +167,18 @@ def fastq_screen_worker(fname) :
 
     os.chdir(os.path.dirname(fname))
 
+    project_nr = get_gc_name(fname)
+
     #Skip read 2 when not single cell, skip if read 1 when single cell
     if config.get("Options","SingleCell") == '0' and ("R2.fastq" in fname or "R2_001.fastq" in fname):
         return
     elif config.get("Options","SingleCell") == '1' and ("R1.fastq" in fname or "R1_001.fastq" in fname):
         return
 
-    ofile="{}/fastq_screen/{}".format(
-            os.path.dirname(fname),
+    ofile="{}/{}/QC_{}/fastq_screen/{}".format(
+            os.path.join(config.get("Paths","outputDir"), 
+            config.get("Options","runID"),
+            project_nr,
             os.path.basename(fname)
             )
 
@@ -243,7 +247,7 @@ def FastQC_worker(fname) :
     projectName = get_gcf_name(fname)
 
     libName = fname.split("/")[-2] #The last directory
-    cmd = "%s %s -o %s/%s%s/FASTQC_%s/ %s" % (
+    cmd = "%s %s -o %s/%s%s/QC_%s/FASTQC %s" % (
           config.get("FastQC","fastqc_command"),
           config.get("FastQC","fastqc_options"),
           config.get("Paths","outputDir"),
@@ -253,7 +257,7 @@ def FastQC_worker(fname) :
           fname)
 
     # Skip if the output exists
-    fastqc_fname = glob.glob("{}/{}{}/FASTQC_{}/*/{}".format(
+    fastqc_fname = glob.glob("{}/{}{}/QC_{}/FASTQC/*/{}".format(
           config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
@@ -261,7 +265,7 @@ def FastQC_worker(fname) :
           os.path.basename(fname).replace(".fastq.gz","_fastqc.zip")
           ))
 
-    fastqc_fname.extend(glob.glob("{}/{}{}/FASTQC_{}/{}".format(
+    fastqc_fname.extend(glob.glob("{}/{}{}/QC_{}/FASTQC/{}".format(
           config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
@@ -282,7 +286,7 @@ def FastQC_worker(fname) :
         return
     """
 
-    os.makedirs("%s/%s%s/FASTQC_%s/" % (config.get("Paths","outputDir"),
+    os.makedirs("%s/%s%s/QC_%s/FASTQC" % (config.get("Paths","outputDir"),
           config.get("Options","runID"),
           lanes,
           projectName), exist_ok=True)
@@ -331,12 +335,13 @@ def md5sum_worker(d) :
     config = localConfig
     oldWd = os.getcwd()
     os.chdir(d)
+    project_nr = d.split('/')[-1]
     if os.path.exists("md5sums.txt"):
         return
     if glob.glob("*.fastq.gz"):
-        cmd = "md5sum *.fastq.gz > md5sums.txt"
+        cmd = "md5sum *.fastq.gz > ../md5sums_{}.txt".format(project_nr)
     else:
-        cmd = "md5sum */*.fastq.gz > md5sums.txt"
+        cmd = "md5sum */*.fastq.gz > ../md5sums._{}txt".format(project_nr)
     syslog.syslog("[md5sum_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
@@ -350,7 +355,7 @@ def multiqc_worker(d) :
     dname = d.split("/")
     pname = dname[-1]
 
-    conf_name = ".{}_multiqc_config.yaml".format(pname)
+    conf_name = "{}/{}/QC_{}/.multiqc_config.yaml".format(config.get('Paths','outputDir'), config.get('Options','runID'),pname)
     in_conf = open("/root/multiqc_config.yaml","r")
     out_conf = open(conf_name,"w+")
     mqc_conf = yaml.load(in_conf)
@@ -375,7 +380,7 @@ def multiqc_worker(d) :
 
     
 
-    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/FASTQC_{pname} {flow_dir}/{pname}".format(
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/QC_{pname} {flow_dir}/{pname}".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
             multiqc_opts = config.get("MultiQC", "multiqc_options"), 
             conf = conf_name,
@@ -386,6 +391,51 @@ def multiqc_worker(d) :
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
 
+def multiqc_stats(project_dirs) :
+    global localConfig
+    config = localConfig
+    oldWd = os.getcwd()
+    os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats'))
+    #os.chdir("{}/{}".format(config.get('Paths','outputDir'), config.get('Options','runID')))
+    #dname = d.split("/")
+    #pname = dname[-1]
+
+    conf_name = "{}/{}/Stats/.multiqc_config.yaml".format(config.get('Paths','outputDir'), config.get('Options','runID'))
+    in_conf = open("/root/multiqc_config.yaml","r")
+    out_conf = open(conf_name,"w+")
+    mqc_conf = yaml.load(in_conf)
+
+    pnames = [d.split('/')[-1] for d in project_dirs] 
+    pnames = ' ,'.join(pnames)
+    mqc_conf['title'] = pnames
+
+    read_geometry = get_read_geometry(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+    contact = config.get('MultiQC','report_contact')
+    sequencer = get_sequencer(config.get('Options','runID'))
+
+    report_header = [
+    {'Contact E-mail': contact},
+    {'Sequencing Platform': sequencer},
+    {'Read Geometry': read_geometry}
+    ]
+    
+    mqc_conf['report_header_info'] = report_header
+    
+    yaml.dump(mqc_conf,out_conf)
+    in_conf.close()
+    out_conf.close()
+
+    
+
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/Stats".format(
+            multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
+            multiqc_opts = config.get("MultiQC", "multiqc_options"), 
+            conf = conf_name,
+            flow_dir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
+            )
+    syslog.syslog("[multiqc_worker] Processing %s\n" % d)
+    subprocess.check_call(cmd, shell=True)
+    os.chdir(oldWd)
 
 def parserDemultiplexStats(config) :
     '''
@@ -435,9 +485,8 @@ def parserDemultiplexStats(config) :
     return out
 
 
-def clumpify_mark_done(project_dirs):
-    for d in project_dirs:
-        open(os.path.join(d,"clumpify.done"),"w+").close()
+def clumpify_mark_done():
+    open(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),"clumpify.done"),"w+").close()
 
 def get_project_names(dirs):
     gcf = set()
@@ -495,7 +544,7 @@ def postMakeSteps(config) :
     p.map(clumpify_worker, sampleFiles)
     p.close()
     p.join()
-    clumpify_mark_done(projectDirs)
+    clumpify_mark_done()
 
     #FastQC
 
@@ -515,12 +564,15 @@ def postMakeSteps(config) :
     p.map(fastq_screen_worker, sampleFiles)
     p.close()
     p.join()
-
+    
     # multiqc
     p = mp.Pool(int(config.get("Options","postMakeThreads")))
     p.map(multiqc_worker, projectDirs)
     p.close()
     p.join()
+
+    # multiqc_stats
+    multiqc_stats(project_dirs)
 
     #disk usage
     (tot,used,free) = shutil.disk_usage(config.get("Paths","outputDir"))
