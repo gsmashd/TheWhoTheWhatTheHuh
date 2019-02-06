@@ -617,9 +617,5 @@ def postMakeSteps(config) :
     with open(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),'bcl2fastq.ini'), 'w+') as configfile:
         config.write(configfile)
 
-    project_names = get_project_names(projectDirs)
-    now = dt.datetime.now()
-    for gcf in project_names:
-        fm.add_flowcell(gcf,os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),now)
 
     return(message)

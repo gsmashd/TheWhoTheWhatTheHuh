@@ -14,6 +14,8 @@ import syslog
 from shutil import copyfile
 import xml.etree.ElementTree as ET
 import flowcell_manager.flowcell_manager as fm
+import datetime as dt
+import bcl2fastq.afterFastq as af
 
 
 CUSTOM_OPTS = ['Organism', 'Libprep', 'SingleCell','RemoveHumanReads','SensitiveData','ReverseComplementIndexP5','ReverseComplementIndexP7','TrimAdapter']
@@ -163,6 +165,13 @@ def markFinished(config) :
         lanes = "_lanes{}".format(lanes)
 
     open("%s/%s%s/fastq.made" % (config["Paths"]["outputDir"], config["Options"]["runID"], lanes), "w").close()
+    project_dirs = af.get_project_dirs(config)
+    project_names = af.get_project_names(project_dirs)
+    now = dt.datetime.now()
+    for gcf in project_names:
+        fm.add_flowcell(gcf,os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),now)
+
+
 
 '''
 This function needs to be run after newFlowCell() returns with config.runID
