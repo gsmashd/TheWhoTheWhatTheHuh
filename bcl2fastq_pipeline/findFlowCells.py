@@ -15,7 +15,7 @@ from shutil import copyfile
 import xml.etree.ElementTree as ET
 import flowcell_manager.flowcell_manager as fm
 import datetime as dt
-import bcl2fastq.afterFastq as af
+import bcl2fastq_pipeline.afterFastq as af
 
 
 CUSTOM_OPTS = ['Organism', 'Libprep', 'SingleCell','RemoveHumanReads','SensitiveData','ReverseComplementIndexP5','ReverseComplementIndexP7','TrimAdapter']
