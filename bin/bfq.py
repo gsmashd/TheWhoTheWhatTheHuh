@@ -113,5 +113,34 @@ while True:
         #Unrecoverable error
         syslog.syslog("Couldn't send the finished email! Quiting")
         sys.exit()
+
+    #Zip project archives
+    try:
+        bcl2fastq_pipeline.afterFastq.archive_worker(config)
+    except Exception as e:
+        syslog.syslog("Got an error during zipping\n")
+        bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), str(e))
+        sleep(config)
+        continue
+
     #Mark the flow cell as having been processed
     bcl2fastq_pipeline.findFlowCells.markFinished(config)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

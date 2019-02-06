@@ -438,6 +438,25 @@ def multiqc_stats(project_dirs) :
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
 
+def archive_worker(config):
+    project_dirs = get_project_dirs(config)
+    pnames = get_project_names(project_dirs)
+
+    for p in pnames:
+        pw = None
+        if config.get("Options","SensitiveData") == "1":
+            pw = subprocess.check_output("xkcdpass -d '-'",shell=True).decode().strip('\n')
+            with open(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),"encryption-{}".format(p)),'w') as pwfile:
+                pwfile.write(pw)
+        opts = "-p {}".format(pw) if pw else ""
+        cmd = "7za a {opts} {flowdir}/{pnr}.zip {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/SampleSheet.csv".format(
+                opts = opts,
+                flowdir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
+                pnr = p
+            )
+        syslog.syslog("[archive_worker] Zipping %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.zip'.format(p)))
+        subprocess.check_call(cmd, shell=True)
+
 def parserDemultiplexStats(config) :
     '''
     Parse DemultiplexingStats.xml under outputDir/Stats/ to get the
@@ -499,6 +518,12 @@ def get_project_names(dirs):
                 gcf.add(catalog)
     return gcf
 
+def get_project_dirs(config):
+    projectDirs = glob.glob("%s/%s%s/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
+    projectDirs.extend(glob.glob("%s/%s%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
+    return toDirs(projectDirs)
+
+
 #All steps that should be run after `make` go here
 def postMakeSteps(config) :
     '''
@@ -512,9 +537,7 @@ def postMakeSteps(config) :
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
 
-    projectDirs = glob.glob("%s/%s%s/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
-    projectDirs.extend(glob.glob("%s/%s%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
-    projectDirs = toDirs(projectDirs)
+    projectDirs = get_project_dirs(config)
     sampleFiles = glob.glob("%s/%s%s/*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
     sampleFiles.extend(glob.glob("%s/%s%s/*/*/*R[12].fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
     sampleFiles.extend(glob.glob("%s/%s%s/*/*R[12]_001.fastq.gz" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes)))
