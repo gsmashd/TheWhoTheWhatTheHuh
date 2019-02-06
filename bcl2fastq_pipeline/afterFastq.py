@@ -405,7 +405,8 @@ def multiqc_stats(project_dirs) :
     out_conf = open(conf_name,"w+")
     mqc_conf = yaml.load(in_conf)
 
-    pnames = [d.split('/')[-1] for d in project_dirs]
+    #pnames = [d.split('/')[-1] for d in project_dirs]
+    pnames = get_project_names(project_dirs)
     pnames = ' ,'.join(pnames)
     mqc_conf['title'] = pnames
 
@@ -433,7 +434,7 @@ def multiqc_stats(project_dirs) :
             conf = conf_name,
             flow_dir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
             )
-    syslog.syslog("[multiqc_worker] Processing %s\n" % d)
+    syslog.syslog("[multiqc_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats'))
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
 
