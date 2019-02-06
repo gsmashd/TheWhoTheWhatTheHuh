@@ -380,7 +380,7 @@ def multiqc_worker(d) :
 
     
 
-    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/QC_{pname} {flow_dir}/{pname}".format(
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/QC_{pname} {flow_dir}/{pname} -o {flow_dir}/QC_{pname}".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
             multiqc_opts = config.get("MultiQC", "multiqc_options"), 
             conf = conf_name,
@@ -405,7 +405,7 @@ def multiqc_stats(project_dirs) :
     out_conf = open(conf_name,"w+")
     mqc_conf = yaml.load(in_conf)
 
-    pnames = [d.split('/')[-1] for d in project_dirs] 
+    pnames = [d.split('/')[-1] for d in project_dirs]
     pnames = ' ,'.join(pnames)
     mqc_conf['title'] = pnames
 
@@ -427,7 +427,7 @@ def multiqc_stats(project_dirs) :
 
     
 
-    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/Stats".format(
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/Stats -o {flow_dir}/Stats".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
             multiqc_opts = config.get("MultiQC", "multiqc_options"), 
             conf = conf_name,
@@ -574,7 +574,7 @@ def postMakeSteps(config) :
     p.join()
 
     # multiqc_stats
-    multiqc_stats(project_dirs)
+    multiqc_stats(projectDirs)
 
     #disk usage
     (tot,used,free) = shutil.disk_usage(config.get("Paths","outputDir"))
