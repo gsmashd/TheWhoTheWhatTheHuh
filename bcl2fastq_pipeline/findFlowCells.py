@@ -140,7 +140,7 @@ def newFlowCell(config) :
             config = setConfFromOpts(config,opts,use_dict_values=False)
     config.set("Options","runID","")
     config.set("Options","sequencer","")
-    config = setConfFromOpts(config,opts,use_dict_values=False)
+    config = setConfFromOpts(config,None,use_dict_values=False)
     return config
 
 def bool2strint(b):
