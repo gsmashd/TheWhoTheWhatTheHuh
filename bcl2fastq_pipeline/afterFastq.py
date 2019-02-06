@@ -167,7 +167,7 @@ def fastq_screen_worker(fname) :
 
     os.chdir(os.path.dirname(fname))
 
-    project_nr = get_gc_name(fname)
+    project_nr = get_gcf_name(fname)
 
     #Skip read 2 when not single cell, skip if read 1 when single cell
     if config.get("Options","SingleCell") == '0' and ("R2.fastq" in fname or "R2_001.fastq" in fname):
