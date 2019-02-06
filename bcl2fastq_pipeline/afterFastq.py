@@ -447,7 +447,7 @@ def archive_worker(config):
         if config.get("Options","SensitiveData") == "1":
             pw = subprocess.check_output("xkcdpass -d '-'",shell=True).decode().strip('\n')
             with open(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),"encryption.{}".format(p)),'w') as pwfile:
-                pwfile.write(pw)
+                pwfile.write('{}\n'.format(pw))
         opts = "-p{}".format(pw) if pw else ""
         cmd = "7za a {opts} {flowdir}/{pnr}.zip {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/SampleSheet.csv".format(
                 opts = opts,
