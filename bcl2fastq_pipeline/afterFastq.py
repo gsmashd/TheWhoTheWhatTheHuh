@@ -485,7 +485,7 @@ def parserDemultiplexStats(config) :
     return out
 
 
-def clumpify_mark_done():
+def clumpify_mark_done(config):
     global localConfig
     config = localConfig
     open(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),"clumpify.done"),"w+").close()
@@ -546,7 +546,7 @@ def postMakeSteps(config) :
     p.map(clumpify_worker, sampleFiles)
     p.close()
     p.join()
-    clumpify_mark_done()
+    clumpify_mark_done(config)
 
     #FastQC
 
