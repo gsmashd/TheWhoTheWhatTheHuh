@@ -128,7 +128,7 @@ def newFlowCell(config) :
         odir = "{}/{}".format(config.get("Paths", "outputDir"), config.get("Options", "runID"))
         if not os.path.exists(odir):
             os.makedirs(odir)
-        if ss is not None and not os.path.exists("{}/SampleSheet.csv".format(odir)):
+        if ss is not None :
             copyfile(ss,"{}/SampleSheet.csv".format(odir))
             ss = "{}/SampleSheet.csv".format(odir)
             config.set("Options","sampleSheet",ss)
