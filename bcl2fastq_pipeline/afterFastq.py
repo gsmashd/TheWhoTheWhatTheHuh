@@ -326,7 +326,7 @@ def md5sum_worker(project_dirs) :
             os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),p),
             os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'md5sums_{}.txt'.format(p))
         )
-        syslog.syslog("[md5sum_worker] Processing %s\n" % d)
+        syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),p))
         subprocess.check_call(cmd, shell=True)
 
 def set_mqc_conf_header(config, mqc_conf):
