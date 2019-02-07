@@ -396,16 +396,20 @@ def multiqc_stats(project_dirs) :
     config = localConfig
     oldWd = os.getcwd()
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats'))
-    #os.chdir("{}/{}".format(config.get('Paths','outputDir'), config.get('Options','runID')))
-    #dname = d.split("/")
-    #pname = dname[-1]
+
+    #Illumina interop
+    cmd = "interop_summary {} --csv=1 < {}".format(
+            os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")),
+            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats','interop_summary.csv'),
+        )
+    syslog.syslog("[multiqc_worker] Interop summura on %s\n" % os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")))
+    subprocess.check_call(cmd,shell=True)
 
     conf_name = "{}/{}/Stats/.multiqc_config.yaml".format(config.get('Paths','outputDir'), config.get('Options','runID'))
     in_conf = open("/root/multiqc_config.yaml","r")
     out_conf = open(conf_name,"w+")
     mqc_conf = yaml.load(in_conf)
 
-    #pnames = [d.split('/')[-1] for d in project_dirs]
     pnames = get_project_names(project_dirs)
     pnames = ' ,'.join(pnames)
     mqc_conf['title'] = pnames
@@ -443,6 +447,8 @@ def archive_worker(config):
     pnames = get_project_names(project_dirs)
 
     for p in pnames:
+        if os.path.exists(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.zip'.format(p))):
+            os.remove(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.zip'.format(p)))
         pw = None
         if config.get("Options","SensitiveData") == "1":
             pw = subprocess.check_output("xkcdpass -d '-'",shell=True).decode().strip('\n')
