@@ -320,14 +320,17 @@ def get_sequencer(run_id):
 def md5sum_worker(project_dirs) :
     global localConfig
     config = localConfig
+    old_wd = os.getcwd()
+    os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
     pnames = get_project_names(project_dirs)
     for p in pnames:
         cmd = "find {} -type f -name '*.fastq.gz' | parallel md5sum > {}".format(
-            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),p),
-            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'md5sums_{}.txt'.format(p))
+            p,
+            'md5sums_{}.txt'.format(p)
         )
         syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),p))
         subprocess.check_call(cmd, shell=True)
+    os.chdir(old_wd)
 
 def set_mqc_conf_header(config, mqc_conf):
 
