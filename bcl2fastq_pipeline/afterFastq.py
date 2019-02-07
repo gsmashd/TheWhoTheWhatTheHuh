@@ -349,7 +349,7 @@ def set_mqc_conf_header(config, mqc_conf):
     {'Read Geometry': read_geometry},
     ]
     if not prepkit == 'N/A':
-        report_header['Lib prep kit'] = prepkit
+        report_header.append({'Lib prep kit': prepkit})
 
     mqc_conf['report_header_info'] = report_header
 
