@@ -22,9 +22,6 @@ import json
 import re
 import datetime as dt
 import flowcell_manager.flowcell_manager as fm
-'''
-Do we really need the md5sum?
-'''
 
 localConfig = None
 
@@ -320,21 +317,17 @@ def get_read_geometry(run_dir):
 def get_sequencer(run_id):
 	return SEQUENCERS.get(run_id.split('_')[1],'Sequencer could not be automatically determined.')
 
-def md5sum_worker(d) :
+def md5sum_worker(project_dirs) :
     global localConfig
     config = localConfig
-    oldWd = os.getcwd()
-    os.chdir(d)
-    project_nr = d.split('/')[-1]
-    if os.path.exists("md5sums.txt"):
-        return
-    if glob.glob("*.fastq.gz"):
-        cmd = "md5sum *.fastq.gz > ../md5sums_{}.txt".format(project_nr)
-    else:
-        cmd = "md5sum */*.fastq.gz > ../md5sums._{}txt".format(project_nr)
-    syslog.syslog("[md5sum_worker] Processing %s\n" % d)
-    subprocess.check_call(cmd, shell=True)
-    os.chdir(oldWd)
+    pnames = get_project_names(project_dirs)
+    for p in pnames:
+        cmd = "find {} -type f -name '*.fastq.gz' | parallel md5sum > ".format(
+            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),p),
+            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'md5sums_{}.txt'.format(p))
+        )
+        syslog.syslog("[md5sum_worker] Processing %s\n" % d)
+        subprocess.check_call(cmd, shell=True)
 
 def set_mqc_conf_header(config, mqc_conf):
 
@@ -570,10 +563,7 @@ def postMakeSteps(config) :
     p.join()
 
     #md5sum
-    p = mp.Pool(int(config.get("Options","postMakeThreads")))
-    p.map(md5sum_worker, projectDirs)
-    p.close()
-    p.join()
+    md5sum_worker(projectDirs)
 
     #fastq_screen
     p = mp.Pool(int(config.get("Options", "fastqScreenThreads")))
