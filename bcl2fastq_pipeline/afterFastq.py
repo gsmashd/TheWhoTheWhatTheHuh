@@ -322,7 +322,7 @@ def md5sum_worker(project_dirs) :
     config = localConfig
     pnames = get_project_names(project_dirs)
     for p in pnames:
-        cmd = "find {} -type f -name '*.fastq.gz' | parallel md5sum > ".format(
+        cmd = "find {} -type f -name '*.fastq.gz' | parallel md5sum > {}".format(
             os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),p),
             os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'md5sums_{}.txt'.format(p))
         )
