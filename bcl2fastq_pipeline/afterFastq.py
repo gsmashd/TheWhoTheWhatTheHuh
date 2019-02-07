@@ -275,16 +275,6 @@ def FastQC_worker(fname) :
 
     if fastqc_fname:
         return
-    
-    """
-    if os.path.exists("%s/%s%s/FASTQC_%s/%s/%s_fastqc.zip" % (config.get("Paths","outputDir"),
-          config.get("Options","runID"),
-          lanes,
-          projectName,
-          libName,
-          os.path.basename(fname)[:-9])):
-        return
-    """
 
     os.makedirs("%s/%s%s/QC_%s/FASTQC" % (config.get("Paths","outputDir"),
           config.get("Options","runID"),
@@ -346,6 +336,25 @@ def md5sum_worker(d) :
     subprocess.check_call(cmd, shell=True)
     os.chdir(oldWd)
 
+def set_mqc_conf_header(config, mqc_conf):
+
+    read_geometry = get_read_geometry(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+    contact = config.get('MultiQC','report_contact')
+    sequencer = get_sequencer(config.get('Options','runID'))
+    prepkit = config.get('Options','Libprep')
+
+    report_header = [
+    {'Contact E-mail': contact},
+    {'Sequencing Platform': sequencer},
+    {'Read Geometry': read_geometry},
+    ]
+    if not prepkit == 'N/A':
+        report_header['Lib prep kit'] = prepkit
+
+    mqc_conf['report_header_info'] = report_header
+
+    return mqc_conf
+
 def multiqc_worker(d) :
     global localConfig
     config = localConfig
@@ -361,24 +370,11 @@ def multiqc_worker(d) :
     mqc_conf = yaml.load(in_conf)
 
     mqc_conf['title'] = pname
+    mqc_conf = set_mqc_conf_header(config,mqc_conf)
 
-    read_geometry = get_read_geometry(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
-    contact = config.get('MultiQC','report_contact')
-    sequencer = get_sequencer(config.get('Options','runID'))
-
-    report_header = [
-    {'Contact E-mail': contact},
-    {'Sequencing Platform': sequencer},
-    {'Read Geometry': read_geometry}
-    ]
-    
-    mqc_conf['report_header_info'] = report_header
-    
     yaml.dump(mqc_conf,out_conf)
     in_conf.close()
     out_conf.close()
-
-    
 
     cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/QC_{pname} {flow_dir}/{pname} -o {flow_dir}/QC_{pname}".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
@@ -398,7 +394,7 @@ def multiqc_stats(project_dirs) :
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats'))
 
     #Illumina interop
-    cmd = "interop_summary {} --csv=1 < {}".format(
+    cmd = "interop_summary {} --csv=1 > {}".format(
             os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")),
             os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats','interop_summary.csv'),
         )
@@ -414,23 +410,11 @@ def multiqc_stats(project_dirs) :
     pnames = ' ,'.join(pnames)
     mqc_conf['title'] = pnames
 
-    read_geometry = get_read_geometry(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
-    contact = config.get('MultiQC','report_contact')
-    sequencer = get_sequencer(config.get('Options','runID'))
+    mqc_conf = set_mqc_conf_header(config,mqc_conf)
 
-    report_header = [
-    {'Contact E-mail': contact},
-    {'Sequencing Platform': sequencer},
-    {'Read Geometry': read_geometry}
-    ]
-    
-    mqc_conf['report_header_info'] = report_header
-    
     yaml.dump(mqc_conf,out_conf)
     in_conf.close()
     out_conf.close()
-
-    
 
     cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/Stats -o {flow_dir}/Stats".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
