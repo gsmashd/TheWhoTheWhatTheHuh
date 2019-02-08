@@ -427,20 +427,20 @@ def archive_worker(config):
     pnames = get_project_names(project_dirs)
 
     for p in pnames:
-        if os.path.exists(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.zip'.format(p))):
-            os.remove(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.zip'.format(p)))
+        if os.path.exists(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.7za'.format(p))):
+            os.remove(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.7za'.format(p)))
         pw = None
         if config.get("Options","SensitiveData") == "1":
             pw = subprocess.check_output("xkcdpass -d '-'",shell=True).decode().strip('\n')
             with open(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),"encryption.{}".format(p)),'w') as pwfile:
                 pwfile.write('{}\n'.format(pw))
         opts = "-p{}".format(pw) if pw else ""
-        cmd = "7za a {opts} {flowdir}/{pnr}.zip {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/SampleSheet.csv".format(
+        cmd = "7za a {opts} {flowdir}/{pnr}.7za {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/SampleSheet.csv".format(
                 opts = opts,
                 flowdir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
                 pnr = p
             )
-        syslog.syslog("[archive_worker] Zipping %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.zip'.format(p)))
+        syslog.syslog("[archive_worker] Zipping %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.7za'.format(p)))
         subprocess.check_call(cmd, shell=True)
 
 def parserDemultiplexStats(config) :
