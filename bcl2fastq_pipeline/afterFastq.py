@@ -560,7 +560,7 @@ def postMakeSteps(config) :
 
     #FastQC
 
-    p = mp.Pool(int(config.get("Options","postMakeThreads")))
+    p = mp.Pool(int(config.get("Options","fastqcThreads")))
     p.map(FastQC_worker, sampleFiles)
     p.close()
     p.join()
