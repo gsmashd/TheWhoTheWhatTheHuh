@@ -107,7 +107,7 @@ def bcl2fq(config) :
                 cellranger_options = config.get("cellranger","cellranger_mkfastq_options")
                 )
     else:
-        cmd = "%s %s --sample-sheet %s -o %s/%s%s -R %s/%s/data/%s " % (
+        cmd = "%s %s --sample-sheet %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s/InterOp" % (
             config.get("bcl2fastq","bcl2fastq"),
             config.get("bcl2fastq","bcl2fastq_options"),
             config.get("Options","sampleSheet"),
@@ -116,6 +116,8 @@ def bcl2fq(config) :
             lanes,
             config.get("Paths","baseDir"),
             config.get("Options","sequencer"),
+            config.get("Options","runID"),
+            config.get("Paths","outputDir"),
             config.get("Options","runID"),
         )
     syslog.syslog("[bcl2fq] Running: %s\n" % cmd)
