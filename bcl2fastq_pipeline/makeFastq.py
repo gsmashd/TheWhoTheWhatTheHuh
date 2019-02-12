@@ -12,6 +12,7 @@ import codecs
 import tempfile
 import xml.etree.ElementTree as ET
 import re
+from distutils.dir_util import copy_tree
 from reportlab.lib import colors, utils
 from reportlab.platypus import BaseDocTemplate, Table, Preformatted, Paragraph, Spacer, Image, Frame, NextPageTemplate, PageTemplate, TableStyle
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -92,6 +93,7 @@ def bcl2fq(config) :
     os.makedirs("%s" % (os.path.join(config.get("Paths","logDir"),os.path.dirname(config.get("Options","runID")))), exist_ok=True)
 
     if config.get("Options","singleCell") == "1":
+        #TODO: --interop-dir
         cmd = "{cellranger_cmd} --output-dir={output_dir} --sample-sheet={sample_sheet} --run={run_dir} {cellranger_options}".format(
                 cellranger_cmd = config.get("cellranger","cellranger_mkfastq"),
                 output_dir = "{}/{}".format(
@@ -107,6 +109,10 @@ def bcl2fq(config) :
                 cellranger_options = config.get("cellranger","cellranger_mkfastq_options")
                 )
     else:
+        copy_tree(
+            os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID"),'InterOp'),
+            os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),'InterOp')
+            )
         cmd = "%s %s --sample-sheet %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s/InterOp" % (
             config.get("bcl2fastq","bcl2fastq"),
             config.get("bcl2fastq","bcl2fastq_options"),
