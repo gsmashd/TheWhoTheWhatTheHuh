@@ -338,6 +338,7 @@ def set_mqc_conf_header(config, mqc_conf):
     contact = config.get('MultiQC','report_contact')
     sequencer = get_sequencer(config.get('Options','runID'))
     prepkit = config.get('Options','Libprep')
+    organism = config.get('Options','Organism')
 
     report_header = [
     {'Contact E-mail': contact},
@@ -346,6 +347,8 @@ def set_mqc_conf_header(config, mqc_conf):
     ]
     if not prepkit == 'N/A':
         report_header.append({'Lib prep kit': prepkit})
+    if not organism == 'N/A':
+        report_header.append({'Organism': organism})
 
     mqc_conf['report_header_info'] = report_header
 

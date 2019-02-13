@@ -153,7 +153,7 @@ def setConfFromOpts(config,opts,use_dict_values=True):
         opts = dict.fromkeys(CUSTOM_OPTS,False)
     for k,v in opts.items():
         if use_dict_values:
-            config.set("Options",k,v if v in ['Organism','Libprep'] else bool2strint(v))
+            config.set("Options",k,v if k in ['Organism','Libprep'] else bool2strint(v))
         else:
             config.set("Options",k,"")
     return config
