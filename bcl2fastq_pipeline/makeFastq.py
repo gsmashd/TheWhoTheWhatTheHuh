@@ -91,6 +91,11 @@ def bcl2fq(config) :
     os.makedirs("%s/%s%s" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes), exist_ok=True)
     #Make log directory
     os.makedirs("%s" % (os.path.join(config.get("Paths","logDir"),os.path.dirname(config.get("Options","runID")))), exist_ok=True)
+    os.makedirs(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),'InterOp'),exist_ok=True)
+    copy_tree(
+        os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID"),'InterOp'),
+        os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),'InterOp')
+        )
 
     if config.get("Options","singleCell") == "1":
         #TODO: --interop-dir
@@ -109,10 +114,6 @@ def bcl2fq(config) :
                 cellranger_options = config.get("cellranger","cellranger_mkfastq_options")
                 )
     else:
-        copy_tree(
-            os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID"),'InterOp'),
-            os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),'InterOp')
-            )
         cmd = "%s %s --sample-sheet %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s/InterOp" % (
             config.get("bcl2fastq","bcl2fastq"),
             config.get("bcl2fastq","bcl2fastq_options"),

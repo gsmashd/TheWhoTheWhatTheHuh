@@ -345,10 +345,10 @@ def set_mqc_conf_header(config, mqc_conf):
     {'Sequencing Platform': sequencer},
     {'Read Geometry': read_geometry},
     ]
-    if not prepkit == 'N/A':
-        report_header.append({'Lib prep kit': prepkit})
-    if not organism == 'N/A':
+    if not organism in ['N/A', 'n/a', '', ' ']:
         report_header.append({'Organism': organism})
+    if not prepkit in ['N/A', 'n/a', '', ' ']:
+        report_header.append({'Lib prep kit': prepkit})
 
     mqc_conf['report_header_info'] = report_header
 
