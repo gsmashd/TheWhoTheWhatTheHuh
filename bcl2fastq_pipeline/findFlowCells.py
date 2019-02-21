@@ -127,13 +127,16 @@ def newFlowCell(config) :
             continue
 
         syslog.syslog("Found a new flow cell: %s\n" % config.get("Options","runID"))
-        odir = "{}/{}".format(config.get("Paths", "outputDir"), config.get("Options", "runID"))
+        odir = os.path.join(config.get("Paths", "outputDir"), config.get("Options", "runID"))
+        instrument_dir = os.path.join(config.get.("Paths","baseDir"),config.get("Options","runID"))
         if not os.path.exists(odir):
             os.makedirs(odir)
         if ss is not None :
             copyfile(ss,"{}/SampleSheet.csv".format(odir))
             ss = "{}/SampleSheet.csv".format(odir)
             config.set("Options","sampleSheet",ss)
+            sample_sub_f = copy_sample_sub_form(instrument_dir,odir)
+            config.set("Options","sampleSubForm",sample_sub_f if sample_sub_f else "")
             config = setConfFromOpts(config,opts)
             return config
         else :
@@ -147,6 +150,14 @@ def newFlowCell(config) :
 
 def bool2strint(b):
     return '1' if b else '0'
+
+def copy_sample_sub_form(instrument_path,output_path):
+    sample_sub_forms = glob.glob("{}/*Sample-Submission-Form*.xlsx".format(instrument_path))
+    if bool(sample_sub_forms):
+        sample_sub_form = sample_sub_forms[0]
+        copyfile(sample_sub_form,"{}/Sample-Submission-Form.xlsx".format(output_path))
+        return sample_sub_form
+    return None
 
 def setConfFromOpts(config,opts,use_dict_values=True):
     if not opts:

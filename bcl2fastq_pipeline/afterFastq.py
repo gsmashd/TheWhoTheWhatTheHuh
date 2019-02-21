@@ -553,7 +553,7 @@ def postMakeSteps(config) :
         p.map(RemoveHumanReads_worker, sampleFiles)
         p.close()
         p.join()
-    
+
     #clumpify
 
     p = mp.Pool(int(config.get("Options","clumpifyWorkerThreads")))
@@ -577,7 +577,7 @@ def postMakeSteps(config) :
     p.map(fastq_screen_worker, sampleFiles)
     p.close()
     p.join()
-    
+
     # multiqc
     p = mp.Pool(int(config.get("Options","postMakeThreads")))
     p.map(multiqc_worker, projectDirs)
