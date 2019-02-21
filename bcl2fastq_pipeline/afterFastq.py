@@ -352,6 +352,9 @@ def set_mqc_conf_header(config, mqc_conf):
 
     mqc_conf['report_header_info'] = report_header
 
+    if read_geometry.startswith('Single end'):
+        mqc_conf['extra_fn_clean_exts'].append('_R1')
+
     return mqc_conf
 
 def multiqc_worker(d) :
@@ -375,7 +378,7 @@ def multiqc_worker(d) :
     in_conf.close()
     out_conf.close()
 
-    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/QC_{pname} {flow_dir}/{pname} -o {flow_dir}/QC_{pname}".format(
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/QC_{pname} {flow_dir}/{pname} --filename {flow_dir}/QC_{pname}/multiqc_{pname}.html".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
             multiqc_opts = config.get("MultiQC", "multiqc_options"), 
             conf = conf_name,
@@ -415,7 +418,7 @@ def multiqc_stats(project_dirs) :
     in_conf.close()
     out_conf.close()
 
-    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/Stats -o {flow_dir}/Stats".format(
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/Stats --filename {flow_dir}/Stats/multiqc_sequencer.html".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
             multiqc_opts = config.get("MultiQC", "multiqc_options"), 
             conf = conf_name,
