@@ -128,7 +128,7 @@ def newFlowCell(config) :
 
         syslog.syslog("Found a new flow cell: %s\n" % config.get("Options","runID"))
         odir = os.path.join(config.get("Paths", "outputDir"), config.get("Options", "runID"))
-        instrument_dir = os.path.join(config.get.("Paths","baseDir"),config.get("Options","runID"))
+        instrument_dir = os.path.dirname(d)
         if not os.path.exists(odir):
             os.makedirs(odir)
         if ss is not None :
