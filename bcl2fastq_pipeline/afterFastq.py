@@ -394,8 +394,7 @@ def multiqc_stats(project_dirs) :
 
     #Illumina interop
     cmd = "interop_summary {} --csv=1 > {}".format(
-            #os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")),
-            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'InterOp'),
+            os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")),
             os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats','interop_summary.csv'),
         )
     syslog.syslog("[multiqc_worker] Interop summary on %s\n" % os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")))
