@@ -156,7 +156,7 @@ def copy_sample_sub_form(instrument_path,output_path):
     if bool(sample_sub_forms):
         sample_sub_form = sample_sub_forms[0]
         copyfile(sample_sub_form,"{}/Sample-Submission-Form.xlsx".format(output_path))
-        return sample_sub_form
+        return "{}/Sample-Submission-Form.xlsx".format(output_path)
     return None
 
 def setConfFromOpts(config,opts,use_dict_values=True):
