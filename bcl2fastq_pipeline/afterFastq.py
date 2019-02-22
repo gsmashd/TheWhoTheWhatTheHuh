@@ -463,27 +463,28 @@ def samplesheet_worker(config,project_dirs):
     """
     #TODO: Account for multiple projects
     project_names = get_project_names(project_dirs)
+    for pid in project_names:
+        with open(config.get("Options","sampleSheet"),'r') as ss:
+            #sample_df, _ = cm.get_data_from_samplesheet(ss)
+            sample_df, _ = cm.get_project_samples_from_samplesheet(ss,[os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))] , pid)
 
-    with open(config.get("Options","sampleSheet"),'r') as ss:
-        sample_df, _ = cm.get_data_from_samplesheet(ss)
+        #project_dirs = cm.inspect_dirs([os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
+        sample_dict = cm.find_samples(sample_df,[os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
 
-    #project_dirs = cm.inspect_dirs([os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
-    sample_dict = cm.find_samples(sample_df,[os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
+        keep_cols = ['Sample_ID']
 
-    keep_cols = ['Sample_ID']
+        if not config.get("Options","sampleSubForm") == "":
+            with open(config.get("Options","sampleSubForm"),'r') as ssub:
+                sample_dict = cm.merge_samples_with_submission_form(ssub,sample_dict)
 
-    if not config.get("Options","sampleSubForm") == "":
-        with open(config.get("Options","sampleSubForm"),'r') as ssub:
-            sample_dict = cm.merge_samples_with_submission_form(ssub,sample_dict)
+            keep_cols.extend(['External_ID', 'Sample_Group','Sample_Biosource','Customer_Comment', 'RIN', '260/280', '260/230'])
 
-        keep_cols.extend(['External_ID', 'Sample_Group','Sample_Biosource','Customer_Comment', 'RIN', '260/280', '260/230'])
-
-    sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
-    sample_df.to_csv(
-        os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"customer_samplesheet.tsv"),
-        index=False,
-        sep='\t'
-        )
+        sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
+        sample_df.to_csv(
+            os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"{}_samplesheet.tsv".format(pid)),
+            index=False,
+            sep='\t'
+            )
 
 
 def parserDemultiplexStats(config) :
