@@ -33,6 +33,7 @@ setup(name = 'bcl2fastq_pipeline',
                            'reportlab',
                            'numpy',
                            'matplotlib',
-                           'bioblend'],
+                           'bioblend',
+                           'git+https://github.com/gcf-trh/configmaker'],
        ext_modules = [module1])
 
