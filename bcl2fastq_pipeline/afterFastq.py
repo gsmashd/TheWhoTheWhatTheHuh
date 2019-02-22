@@ -450,7 +450,7 @@ def archive_worker(config):
         syslog.syslog("[archive_worker] Zipping %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.7za'.format(p)))
         subprocess.check_call(cmd, shell=True)
 
-def samplesheet_worker(config):
+def samplesheet_worker(config,project_dirs):
     """
     TODO:
     Import configmaker
@@ -461,11 +461,13 @@ def samplesheet_worker(config):
 
     """
     #TODO: Account for multiple projects
+    project_names = get_project_names(project_dirs)
+
     with open(config.get("Options","sampleSheet"),'r') as ss:
         sample_df, _ = cm.get_data_from_samplesheet(ss)
 
-    project_dirs = cm.inspect_dirs([os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
-    sample_dict = cm.find_samples(sample_df,project_dirs)
+    #project_dirs = cm.inspect_dirs([os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
+    sample_dict = cm.find_samples(sample_df,[os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
 
     keep_cols = ['Sample_ID']
 
@@ -615,7 +617,7 @@ def postMakeSteps(config) :
     p.join()
 
     #customer_samplesheet
-    samplesheet_worker(config)
+    samplesheet_worker(config,projectDirs)
 
     # multiqc
     p = mp.Pool(int(config.get("Options","postMakeThreads")))
