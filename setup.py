@@ -35,6 +35,6 @@ setup(name = 'bcl2fastq_pipeline',
                            'matplotlib',
                            'bioblend',
                            'configmaker'],
-       dependency_links = ['https://github.com/gcf-trh/configmaker'],
+       dependency_links = ['git+https://github.com/gcf-trh/configmaker'],
        ext_modules = [module1])
 
