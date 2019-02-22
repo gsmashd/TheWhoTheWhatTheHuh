@@ -23,6 +23,7 @@ import re
 import datetime as dt
 import flowcell_manager.flowcell_manager as fm
 import configmaker.configmaker as cm
+import pandas as pd
 
 localConfig = None
 
