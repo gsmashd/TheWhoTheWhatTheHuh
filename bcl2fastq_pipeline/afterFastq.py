@@ -22,6 +22,7 @@ import json
 import re
 import datetime as dt
 import flowcell_manager.flowcell_manager as fm
+import configmaker.configmaker as cm
 
 localConfig = None
 
@@ -449,6 +450,36 @@ def archive_worker(config):
         syslog.syslog("[archive_worker] Zipping %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.7za'.format(p)))
         subprocess.check_call(cmd, shell=True)
 
+def samplesheet_worker(config):
+    """
+    TODO:
+    Import configmaker
+    Get samplesheet data as dict from 'get_data_from_samplesheet(fh)'
+    If sample submission form - use 'merge_samples_with_submission_form(ssub,sample_dict)'
+    Keep selected columns and write customer samplesheet
+    Use data structure to add data to general statistics in multiqc config
+
+    """
+    #TODO: Account for multiple projects
+    with open(config.get("Options","sampleSheet"),'r') as ss:
+        sample_dict, _ = cm.get_data_from_samplesheet(ss)
+
+    keep_cols = ['Sample_ID']
+
+    if not config.get("Options","sampleSubForm") == "":
+        with open(config.get("Options","sampleSubForm"),'r') as ssub:
+            sample_dict = cm.merge_samples_with_submission_form(ssub,sample_dict)
+
+        keep_cols.extend(['External_ID', 'Sample_Group','Sample_Biosource','Customer_Comment', 'RIN', '260/280', '260/230'])
+
+    sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
+    sample_df.to_csv(
+        os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"customer_samplesheet.tsv"),
+        index=False,
+        separator='\t'
+        )
+
+
 def parserDemultiplexStats(config) :
     '''
     Parse DemultiplexingStats.xml under outputDir/Stats/ to get the
@@ -579,6 +610,9 @@ def postMakeSteps(config) :
     p.map(fastq_screen_worker, sampleFiles)
     p.close()
     p.join()
+
+    #customer_samplesheet
+    samplesheet_worker(config)
 
     # multiqc
     p = mp.Pool(int(config.get("Options","postMakeThreads")))
