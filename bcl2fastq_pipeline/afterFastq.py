@@ -482,7 +482,7 @@ def samplesheet_worker(config,project_dirs):
     sample_df.to_csv(
         os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"customer_samplesheet.tsv"),
         index=False,
-        separator='\t'
+        sep='\t'
         )
 
 
