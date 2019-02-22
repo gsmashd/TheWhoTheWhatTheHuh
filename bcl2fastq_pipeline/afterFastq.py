@@ -443,7 +443,7 @@ def archive_worker(config):
             with open(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),"encryption.{}".format(p)),'w') as pwfile:
                 pwfile.write('{}\n'.format(pw))
         opts = "-p{}".format(pw) if pw else ""
-        cmd = "7za a {opts} {flowdir}/{pnr}.7za {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/SampleSheet.csv".format(
+        cmd = "7za a {opts} {flowdir}/{pnr}.7za {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/{pnr}_samplesheet.tsv".format(
                 opts = opts,
                 flowdir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
                 pnr = p
