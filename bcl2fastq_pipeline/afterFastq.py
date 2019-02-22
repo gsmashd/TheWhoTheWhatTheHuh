@@ -462,7 +462,10 @@ def samplesheet_worker(config):
     """
     #TODO: Account for multiple projects
     with open(config.get("Options","sampleSheet"),'r') as ss:
-        sample_dict, _ = cm.get_data_from_samplesheet(ss)
+        sample_df, _ = cm.get_data_from_samplesheet(ss)
+
+    project_dirs = cm.inspect_dirs(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+    sample_dict = cm.find_samples(sample_df,project_dirs)
 
     keep_cols = ['Sample_ID']
 
