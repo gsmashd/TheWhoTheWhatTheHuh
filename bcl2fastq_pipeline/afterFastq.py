@@ -478,8 +478,10 @@ def samplesheet_worker(config,project_dirs):
                 sample_dict = cm.merge_samples_with_submission_form(ssub,sample_dict)
 
             keep_cols.extend(['External_ID', 'Sample_Group','Sample_Biosource','Customer_Comment', 'RIN', '260/280', '260/230'])
-
-        sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
+        try:
+            sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
+        except Exception as e:
+            sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[['Sample_ID']]
         sample_df.to_csv(
             os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"{}_samplesheet.tsv".format(pid)),
             index=False,
