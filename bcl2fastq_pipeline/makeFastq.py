@@ -99,9 +99,8 @@ def bcl2fq(config) :
 
     if config.get("Options","singleCell") == "1":
         #TODO: --interop-dir not supported for cellranger
-	old_wd = os.getcwd()
-	os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
-
+        old_wd = os.getcwd()
+        os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
         cmd = "{cellranger_cmd} --output-dir={output_dir} --sample-sheet={sample_sheet} --run={run_dir} {cellranger_options}".format(
                 cellranger_cmd = config.get("cellranger","cellranger_mkfastq"),
                 output_dir = "{}/{}".format(
