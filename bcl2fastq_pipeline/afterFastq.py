@@ -481,7 +481,7 @@ def samplesheet_worker(config,project_dirs):
             try:
                 sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
             except Exception as e:
-                sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[['Sample_ID', 'Sample_Group','Sample_Biosource','Customer_Comment']]
+                sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[['Sample_ID', 'External_ID', 'Sample_Group','Sample_Biosource','Customer_Comment']]
         else:
             sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
         sample_df.to_csv(
