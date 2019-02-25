@@ -115,7 +115,7 @@ def bcl2fq(config) :
                     ),
                 cellranger_options = config.get("cellranger","cellranger_mkfastq_options")
                 )
-	os.chdir(old_wd)
+        os.chdir(old_wd)
     else:
         cmd = "%s %s --sample-sheet %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s/InterOp" % (
             config.get("bcl2fastq","bcl2fastq"),
