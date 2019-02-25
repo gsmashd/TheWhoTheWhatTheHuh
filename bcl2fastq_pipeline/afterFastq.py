@@ -481,7 +481,10 @@ def samplesheet_worker(config,project_dirs):
         try:
             sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
         except Exception as e:
-            sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[['Sample_ID']]
+            if not config.get("Options","sampleSubForm") == "":
+                sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[['Sample_ID', 'Sample_Group','Sample_Biosource','Customer_Comment']]
+            else:
+                sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[['Sample_ID']]
         sample_df.to_csv(
             os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"{}_samplesheet.tsv".format(pid)),
             index=False,
