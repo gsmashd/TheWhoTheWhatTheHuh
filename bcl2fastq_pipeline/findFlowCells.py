@@ -66,7 +66,7 @@ def parseSampleSheet(ss):
             continue
         elif opts_data:
             key = line.split(',')[0]
-            value = line.split(',')[-1]
+            value = line.split(',')[1]
             opt_d[key] = value.rstrip() if key in ['Organism','Libprep'] else str2bool(value.rstrip())
     return ss,opt_d
 
