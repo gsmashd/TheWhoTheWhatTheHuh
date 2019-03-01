@@ -125,6 +125,7 @@ def newFlowCell(config) :
         odir = os.path.join(config.get("Paths", "outputDir"), config.get("Options", "runID"))
 
         ss, opts = getSampleSheets(os.path.dirname(d))
+        sample_sub_f = glob.glob(os.path.join(instrument_dir,"*Sample-Submission-Form*.xlsx"))
 
         if not opts or not sample_sub_f:
             continue
