@@ -125,7 +125,6 @@ def newFlowCell(config) :
         odir = os.path.join(config.get("Paths", "outputDir"), config.get("Options", "runID"))
 
         ss, opts = getSampleSheets(os.path.dirname(d))
-        sample_sub_f = copy_sample_sub_form(instrument_dir,odir)
 
         if not opts or not sample_sub_f:
             continue
@@ -133,6 +132,8 @@ def newFlowCell(config) :
         syslog.syslog("Found a new flow cell: %s\n" % config.get("Options","runID"))
         if not os.path.exists(odir):
             os.makedirs(odir)
+
+        sample_sub_f = copy_sample_sub_form(instrument_dir,odir)
         if ss is not None :
             copyfile(ss,"{}/SampleSheet.csv".format(odir))
             ss = "{}/SampleSheet.csv".format(odir)
