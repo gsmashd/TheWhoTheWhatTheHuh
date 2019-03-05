@@ -372,7 +372,13 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
         MAX = {
             'RIN': 10,
             '260/230': max(3,s_df['260/230'].max()),
-            '280/260': max(3,s_df['260/280'].max())
+            '260/280': max(3,s_df['260/280'].max())
+            }
+
+        COL_SCALE = {
+            'RIN': 'OrRd',
+            '260/230': 'PuBu',
+            '260/280': 'BuGn'
         }
 
         s_df.drop(['Sample_ID'], axis=1,inplace=True)
@@ -382,7 +388,8 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
         pconfig = {}
         for col in list(s_df.columns.values):
             pconfig[col] = {'format': '{}', 'min': 0, 'placement': QC_PLACEMENT[col]}
-            pconfig[col]['max'] = MAX.get(col,0)
+            pconfig[col]['max'] = MAX.get(col,None)
+            pconfig[col]['scale'] = COL_SCALE.get(col,False)
 
 
         data = {}
