@@ -359,7 +359,7 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
     if os.path.exists(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title']))):
         s_df = pd.read_csv(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title'])),sep='\t')
         s_df.index = s_df['Sample_ID']
-        s_df.drop(['Sample_ID'], axis=1)
+        s_df.drop(['Sample_ID'], axis=1,inplace=True)
         s_df.dropna(how='all', axis=1, inplace=True)
         s_dict = s_df.to_dict(orient='index')
 
