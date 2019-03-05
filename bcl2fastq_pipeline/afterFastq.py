@@ -168,10 +168,8 @@ def fastq_screen_worker(fname) :
 
     project_nr = get_gcf_name(fname)
 
-    #Skip read 2 when not single cell, skip if read 1 when single cell
-    if config.get("Options","SingleCell") == '0' and ("R2.fastq" in fname or "R2_001.fastq" in fname):
-        return
-    elif config.get("Options","SingleCell") == '1' and ("R1.fastq" in fname or "R1_001.fastq" in fname):
+    #Skip read 1 when single cell
+    if config.get("Options","SingleCell") == '1' and ("R1.fastq" in fname or "R1_001.fastq" in fname):
         return
 
     ofile="{}/{}/QC_{}/fastq_screen/{}".format(
