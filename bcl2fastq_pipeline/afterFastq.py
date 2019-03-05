@@ -334,9 +334,10 @@ def md5sum_worker(project_dirs) :
         subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
 
-def set_mqc_conf_header(config, mqc_conf):
-
-    read_geometry = get_read_geometry(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
+    
+    odir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))
+    read_geometry = get_read_geometry(odir)
     contact = config.get('MultiQC','report_contact')
     sequencer = get_sequencer(config.get('Options','runID'))
     prepkit = config.get('Options','Libprep')
@@ -356,6 +357,36 @@ def set_mqc_conf_header(config, mqc_conf):
 
     if read_geometry.startswith('Single end'):
         mqc_conf['extra_fn_clean_exts'].append('_R1')
+
+    if os.path.exists(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title']))):
+        s_df = pd.read_csv(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title'])),sep='\t')
+        s_df.index = s_df['Sample_ID']
+        s_df.drop(['Sample_ID'], axis=1)
+        s_df.dropna(how='all', axis=1, inplace=True)
+        s_dict = s_df.to_dict(orient=index)
+
+        pconfig = {}
+        for col in list(s_df.columns.values):
+            pconfig[col] = {'min': 0, 'max': 0}
+
+        data = {}
+        if read_geometry.startswith('Paired end') and not seq_stats:
+            for k,v in s_dict.items():
+                data['_R1'.format(k)] = v
+                data['_R2'.format(k)] = v
+        else:
+            data = s_dict
+
+        general_statistics = {
+            'plot_type': 'generalstats',
+            'pconfig': [pconfig],
+            'data': data
+        }
+        custom_data = {'general_statistics': general_statistics}
+
+        mqc_conf['custom_data'] = custom_data
+
+
 
     return mqc_conf
 
@@ -381,11 +412,11 @@ def multiqc_worker(d) :
     out_conf.close()
 
     cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/QC_{pname} {flow_dir}/{pname} --filename {flow_dir}/QC_{pname}/multiqc_{pname}.html".format(
-            multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
-            multiqc_opts = config.get("MultiQC", "multiqc_options"), 
+            multiqc_cmd = config.get("MultiQC", "multiqc_command"),
+            multiqc_opts = config.get("MultiQC", "multiqc_options"),
             conf = conf_name,
             flow_dir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
-            pname=pname,  
+            pname=pname,
             )
     syslog.syslog("[multiqc_worker] Processing %s\n" % d)
     subprocess.check_call(cmd, shell=True)
@@ -414,7 +445,7 @@ def multiqc_stats(project_dirs) :
     pnames = ' ,'.join(pnames)
     mqc_conf['title'] = pnames
 
-    mqc_conf = set_mqc_conf_header(config,mqc_conf)
+    mqc_conf = set_mqc_conf_header(config,mqc_conf,seq_stats=True)
 
     yaml.dump(mqc_conf,out_conf)
     in_conf.close()
