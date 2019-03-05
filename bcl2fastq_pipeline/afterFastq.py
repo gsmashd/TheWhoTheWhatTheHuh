@@ -361,17 +361,19 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
         s_df.index = s_df['Sample_ID']
         s_df.drop(['Sample_ID'], axis=1)
         s_df.dropna(how='all', axis=1, inplace=True)
-        s_dict = s_df.to_dict(orient=index)
+        s_dict = s_df.to_dict(orient='index')
 
         pconfig = {}
         for col in list(s_df.columns.values):
-            pconfig[col] = {'min': 0, 'max': 0}
+            pconfig[col] = {'format': '{}', 'min': 0, 'max': 0}
+            if col == 'External_ID':
+                pconfig[col]['placement'] = 0
 
         data = {}
         if read_geometry.startswith('Paired end') and not seq_stats:
             for k,v in s_dict.items():
-                data['_R1'.format(k)] = v
-                data['_R2'.format(k)] = v
+                data['{}_R1'.format(k)] = v
+                data['{}_R2'.format(k)] = v
         else:
             data = s_dict
 
