@@ -35,6 +35,15 @@ SEQUENCERS = {
         'M03942' : 'MiSeq StOlav'
         }
 
+QC_PLACEMENT = {
+    'External_ID': 0,
+    'Sample_Biosource': 10,
+    'Sample_Group': 20,
+    'Customer_Comment': 30,
+    '260/230': 40,
+    '260/280': 50,
+    'RIN': 60
+}
 
 def bgzip_worker(fname) :
     global localConfig
@@ -359,15 +368,22 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
     if os.path.exists(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title']))):
         s_df = pd.read_csv(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title'])),sep='\t')
         s_df.index = s_df['Sample_ID']
+
+        MAX = {
+            'RIN': 10,
+            '260/230': max(3,s_df['260/230'].max()),
+            '280/260': max(3,s_df['260/280'].max())
+        }
+
         s_df.drop(['Sample_ID'], axis=1,inplace=True)
         s_df.dropna(how='all', axis=1, inplace=True)
         s_dict = s_df.to_dict(orient='index')
 
         pconfig = {}
         for col in list(s_df.columns.values):
-            pconfig[col] = {'format': '{}', 'min': 0, 'max': 0}
-            if col == 'External_ID':
-                pconfig[col]['placement'] = 0
+            pconfig[col] = {'format': '{}', 'min': 0, 'placement': QC_PLACEMENT[col]}
+            pconfig[col]['max'] = MAX.get(col,0)
+
 
         data = {}
         if read_geometry.startswith('Paired end') and not seq_stats:
