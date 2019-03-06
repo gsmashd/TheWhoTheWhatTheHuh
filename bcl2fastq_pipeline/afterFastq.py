@@ -313,9 +313,9 @@ def get_read_geometry(run_dir):
         if read['IsIndexedRead'] == True:
             continue
         elif read['Number'] == 1:
-            R1 = int(read['NumCycles'])-1
+            R1 = int(read['NumCycles'])
         elif read['Number'] == 2:
-            R2 = int(read['NumCycles'])-1
+            R2 = int(read['NumCycles'])
     if R1 and R2:
         return 'Paired end - forward read length (R1): {}, reverse read length (R2): {}'.format(R1,R2)
     elif R1 and not R2:
