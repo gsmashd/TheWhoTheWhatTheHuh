@@ -365,7 +365,7 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
     if read_geometry.startswith('Single end'):
         mqc_conf['extra_fn_clean_exts'].append('_R1')
 
-    if os.path.exists(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title']))):
+    if os.path.exists(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title']))) and config.get("Options","SingleCell") == 0:
         s_df = pd.read_csv(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title'])),sep='\t')
         s_df.index = s_df['Sample_ID']
 
