@@ -67,8 +67,10 @@ def fixNames(config) :
     lanes = config.get("Options", "lanes")
     if lanes != "":
         lanes = "_lanes{}".format(lanes)
-    
-   
+
+    if config.get("Options","SingleCell") == 1:
+        return
+
     names = glob.glob("%s/%s%s/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes))
     names.extend(glob.glob("%s/%s%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)))
     for fname in names:
