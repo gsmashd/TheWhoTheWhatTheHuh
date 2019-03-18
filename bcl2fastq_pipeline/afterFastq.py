@@ -350,6 +350,30 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
     prepkit = config.get('Options','Libprep')
     organism = config.get('Options','Organism')
 
+    if not seq_stats:
+        mqc_conf['intro_text'] = """This report is automatically generated for projects run at Genomics Core Facility, NTNU, Trondheim. The results are reported per sample.
+
+        In the delivered zipped archive, you will find the following content:
+        - {pname}: A folder containing the demultiplexed fastq-files.
+        - QC_{pname}: A folder containing output from FastQC, fastq_screen and MultiQC together with this report, multiqc_{pname}.html
+        - Stats: A folder containing statistics from the sequencer. A summary report of the sequencer stats can be found in sequencer_stats_{pname}.html
+        - Undetermined*.fastq.gz: Fastq-files containing reads that did not map to any samples.
+        - {pname}_samplesheet.tsv: A samplesheet containing all the submitted samples together with info from sample submission form, if apliccable.
+
+        To unzip the archive from a linux command line, execute the following command.
+
+        If you were given a password:
+        7za x {pname}.7za -p'your_password' 
+
+        If you were not given a password:
+        7za x {pname}.7za
+
+        If you don't have 7za available from your command line, you must install the package p7zip-full.
+
+
+        """.format(pname=mqc_conf['title'])
+
+
     report_header = [
     {'Contact E-mail': contact},
     {'Sequencing Platform': sequencer},
