@@ -351,7 +351,7 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
     organism = config.get('Options','Organism')
 
     if not seq_stats:
-        mqc_conf['intro_text'] = "This report is automatically generated for projects run at Genomics Core Facility, NTNU, Trondheim. The results are reported per sample.<br/><br/>\n\nIn the delivered zipped archive, you will find the following content:<br/>\n<strong>- {pname}:</strong> A folder containing the demultiplexed fastq-files.<br/>\n<strong>- QC_{pname}:</strong> A folder containing output from FastQC, fastq_screen and MultiQC together with this report, multiqc_{pname}.html<br/>\n<strong>- Stats:</strong> A folder containing statistics from the sequencer. A summary report of the sequencer stats can be found in sequencer_stats_{pname}.html<br/>\n<strong>- Undetermined*.fastq.gz:</strong> Fastq-files containing reads that did not map to any samples.<br/>\n<strong>- {pname}_samplesheet.tsv:</strong> A samplesheet containing all the submitted samples together with info from sample submission form, if apliccable.<br/><br/>\n\nTo unzip the archive from a linux command line, execute the following command.<br/><br/>\n\nIf you were given a password:<br/>\n7za x {pname}.7za -p'your_password'<br/><br/>\n\nIf you were not given a password:<br/>\n7za x {pname}.7za<br/><br/>\nIf you don't have 7za available from your command line, you must install the package p7zip-full.".format(pname=mqc_conf['title']) 
+        mqc_conf['intro_text'] = "This report is generated for projects run at Genomics Core Facility, NTNU, Trondheim. The results are reported per sample.<br/><br/>\n\nIn the delivered zipped archive, you will find the following content:<br/>\n<strong>- {pname}:</strong> A folder containing the demultiplexed fastq-files.<br/>\n<strong>- QC_{pname}:</strong> A folder containing output from FastQC, fastq_screen and MultiQC together with this report, multiqc_{pname}.html<br/>\n<strong>- Stats:</strong> A folder containing statistics from the sequencer. A summary report of the sequencer stats can be found in sequencer_stats_{pname}.html<br/>\n<strong>- Undetermined*.fastq.gz:</strong> Fastq-files containing reads that did not map to any samples.<br/>\n<strong>- {pname}_samplesheet.tsv:</strong> A samplesheet containing all the submitted samples together with info from sample submission form, if apliccable.<br/><br/>\n\nTo unzip the archive from a linux command line, execute the following command.<br/><br/>\n\nIf you were given a password:<br/>\n7za x {pname}.7za -p'your_password'<br/><br/>\n\nIf you were not given a password:<br/>\n7za x {pname}.7za<br/><br/>\nIf you don't have 7za available from your command line, you must install the package p7zip-full.".format(pname=mqc_conf['title']) 
 
     report_header = [
     {'Contact E-mail': contact},
@@ -468,7 +468,7 @@ def multiqc_stats(project_dirs) :
     mqc_conf = yaml.load(in_conf)
 
     pnames = get_project_names(project_dirs)
-    pnames = ' ,'.join(pnames)
+    pnames = ', '.join(pnames)
     mqc_conf['title'] = pnames
 
     mqc_conf = set_mqc_conf_header(config,mqc_conf,seq_stats=True)
@@ -477,11 +477,12 @@ def multiqc_stats(project_dirs) :
     in_conf.close()
     out_conf.close()
 
-    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/Stats --filename {flow_dir}/Stats/multiqc_sequencer.html".format(
+    cmd = "{multiqc_cmd} {multiqc_opts} --config {conf} {flow_dir}/Stats --filename {flow_dir}/Stats/sequencer_stats_{pname}.html".format(
             multiqc_cmd = config.get("MultiQC", "multiqc_command"), 
             multiqc_opts = config.get("MultiQC", "multiqc_options"), 
             conf = conf_name,
             flow_dir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
+            pname = pnames.replace(", ","_")
             )
     syslog.syslog("[multiqc_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats'))
     subprocess.check_call(cmd, shell=True)
