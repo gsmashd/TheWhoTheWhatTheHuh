@@ -428,7 +428,7 @@ def multiqc_worker(d) :
     conf_name = "{}/{}/QC_{}/.multiqc_config.yaml".format(config.get('Paths','outputDir'), config.get('Options','runID'),pname)
     in_conf = open("/root/multiqc_config.yaml","r")
     out_conf = open(conf_name,"w+")
-    mqc_conf = yaml.load(in_conf)
+    mqc_conf = yaml.load(in_conf,Loader=yaml.FullLoader)
 
     mqc_conf['title'] = pname
     mqc_conf = set_mqc_conf_header(config,mqc_conf)
@@ -465,7 +465,7 @@ def multiqc_stats(project_dirs) :
     conf_name = "{}/{}/Stats/.multiqc_config.yaml".format(config.get('Paths','outputDir'), config.get('Options','runID'))
     in_conf = open("/root/multiqc_config.yaml","r")
     out_conf = open(conf_name,"w+")
-    mqc_conf = yaml.load(in_conf)
+    mqc_conf = yaml.load(in_conf,Loader=yaml.FullLoader)
 
     pnames = get_project_names(project_dirs)
     pnames = ', '.join(pnames)
