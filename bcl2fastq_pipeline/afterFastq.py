@@ -701,8 +701,18 @@ def postMakeSteps(config) :
     #Undetermined indices
     undeter = parserDemultiplexStats(config)
 
-    message = "Current free space: %i of %i gigs (%5.2f%%)\n" % (
+    message = "Current free space for output: %i of %i gigs (%5.2f%%)\n" % (
         free,tot,100*free/tot)
+
+    (tot,used,free) = shutil.disk_usage(config.get("Paths","baseDir"))
+    tot /= 1024*1024*1024 #Convert to gigs
+    used /= 1024*1024*1024
+    free /= 1024*1024*1024
+
+
+    message += "Current free space for instruments: %i of %i gigs (%5.2f%%)\n" % (
+        free,tot,100*free/tot)
+
     message += undeter
 
     #save configfile to flowcell
