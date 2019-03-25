@@ -164,7 +164,7 @@ def finishedEmail(config, msg, runTime, transferTime) :
     #with open(os.path.join(config.get("Paths", "reportDir"),'{}.report'.format(config.get("Options","runID"))),'w') as report:
     #    report.write(msg)
     msg = MIMEMultipart()
-    msg['Subject'] = "[bcl2fastq_pipeline] {} processed".format(", ".format(projects))
+    msg['Subject'] = "[bcl2fastq_pipeline] {} processed".format(", ".join(projects))
     msg['From'] = config.get("Email","fromAddress")
     msg['To'] = config.get("Email","finishedTo")
 
@@ -178,6 +178,15 @@ def finishedEmail(config, msg, runTime, transferTime) :
                     )
         part['Content-Disposition'] = 'attachment; filename="multiqc_{}.html"'.format(p)
         msg.attach(part)
+
+
+    with open(os.path.join(odir,"Stats/sequencer_stats_{}.html".format("_".join(projects))),"rb") as report:
+        part = MIMEApplication(
+                report.read(),
+                report.name
+                )
+    part['Content-Disposition'] = 'attachment; filename="sequencer_stats_{}.html"'.format("_".join(projects))
+    msg.attach(part)
 
     s = smtplib.SMTP(config.get("Email","host"))
     s.send_message(msg)
