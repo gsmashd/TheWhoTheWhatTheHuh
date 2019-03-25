@@ -6,6 +6,9 @@ import configparser
 import shutil
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.utils import COMMASPACE, formatdate
 import xml.etree.ElementTree as ET
 from reportlab.lib import colors, utils
 from reportlab.platypus import BaseDocTemplate, Table, Preformatted, Paragraph, Spacer, Image, Frame, NextPageTemplate, PageTemplate, TableStyle, PageBreak, ListFlowable, ListItem
@@ -24,6 +27,8 @@ import stat
 import codecs
 import requests
 import json
+
+from bcl2fastq_pipeline.afterFastq import get_project_dirs, get_project_names
 
 
 def getSampleID(sampleTuple, project, lane, sampleName) :
@@ -146,23 +151,34 @@ def errorEmail(config, errTuple, msg) :
 
 def finishedEmail(config, msg, runTime, transferTime) :
     lanes = config.get("Options", "lanes")
-    if lanes != "":
-        lanes = "_lanes{}".format(lanes)
 
-    message = "Flow cell: %s%s\n" % (config.get("Options","runID"), lanes)
+    message = "Flow cell: %s\n" % (config.get("Options","runID"))
     message += "Run time: %s\n" % runTime
-    message += "Data transfer: %s\n" % transferTime
+    #message += "Data transfer: %s\n" % transferTime
     message += msg
 
-    with open(os.path.join(config.get("Paths", "reportDir"),'{}.report'.format(config.get("Options","runID"))),'w') as report:
-        report.write(msg)
-    """
-    msg = MIMEText(message)
-    msg['Subject'] = "[bcl2fastq_pipeline] %s%s processed" % (config.get("Options","runID"), lanes)
+    projects = get_project_names(get_project_dirs(config))
+
+    odir = os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"))
+
+    #with open(os.path.join(config.get("Paths", "reportDir"),'{}.report'.format(config.get("Options","runID"))),'w') as report:
+    #    report.write(msg)
+    msg = MIMEMultipart()
+    msg['Subject'] = "[bcl2fastq_pipeline] {} processed".format(", ".format(projects))
     msg['From'] = config.get("Email","fromAddress")
     msg['To'] = config.get("Email","finishedTo")
+
+    msg.attach(MIMEText(message))
+
+    for p in projects:
+        with open(os.path.join(odir,"QC_{pnr}/multiqc_{pnr}.html".format(pnr=p)),"rb") as report:
+            part = MIMEApplication(
+                    report.read(),
+                    report.name
+                    )
+        part['Content-Disposition'] = 'attachment; filename="multiqc_{}.html"'.format(p)
+        msg.attach(part)
 
     s = smtplib.SMTP(config.get("Email","host"))
     s.send_message(msg)
     s.quit()
-    """
