@@ -497,7 +497,7 @@ def archive_worker(config):
             os.remove(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.7za'.format(p)))
         pw = None
         if config.get("Options","SensitiveData") == "1":
-            pw = subprocess.check_output("xkcdpass -d '-'",shell=True).decode().strip('\n')
+            pw = subprocess.check_output("xkcdpass -n 5 -d '-' -v '[a-z]'",shell=True).decode().strip('\n')
             with open(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),"encryption.{}".format(p)),'w') as pwfile:
                 pwfile.write('{}\n'.format(pw))
         opts = "-p{}".format(pw) if pw else ""
