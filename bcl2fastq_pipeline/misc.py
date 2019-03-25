@@ -149,15 +149,17 @@ def errorEmail(config, errTuple, msg) :
     s.quit()
     """
 
-def finishedEmail(config, msg, runTime, transferTime) :
+def finishedEmail(config, msg, runTime) :
     lanes = config.get("Options", "lanes")
 
-    message = "Flow cell: %s\n" % (config.get("Options","runID"))
+    projects = get_project_names(get_project_dirs(config))
+
+    message = "Short summary for {}\n".forma(", ".join(projects))
+    message += "Flow cell: %s\n" % (config.get("Options","runID"))
     message += "Run time: %s\n" % runTime
     #message += "Data transfer: %s\n" % transferTime
     message += msg
 
-    projects = get_project_names(get_project_dirs(config))
 
     odir = os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"))
 

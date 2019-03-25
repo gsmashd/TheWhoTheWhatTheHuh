@@ -102,13 +102,10 @@ while True:
         continue
 
     runTime = datetime.datetime.now()-startTime
-    startTime = datetime.datetime.now()
-    message += "Did not transfer data\n"
-    transferTime = datetime.datetime.now()-startTime
 
     #Email finished message
     try :
-        bcl2fastq_pipeline.misc.finishedEmail(config, message, runTime, transferTime)
+        bcl2fastq_pipeline.misc.finishedEmail(config, message, runTime)
     except :
         #Unrecoverable error
         syslog.syslog("Couldn't send the finished email! Quiting")
