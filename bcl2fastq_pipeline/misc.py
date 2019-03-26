@@ -28,7 +28,7 @@ import codecs
 import requests
 import json
 
-from bcl2fastq_pipeline.afterFastq import get_project_dirs, get_project_names
+from bcl2fastq_pipeline.afterFastq import get_project_dirs, get_project_names, get_sequencer, get_read_geometry
 
 
 def getSampleID(sampleTuple, project, lane, sampleName) :
@@ -156,7 +156,9 @@ def finishedEmail(config, msg, runTime) :
 
     message = "Short summary for {}.\n\n".format(", ".join(projects))
     message += "Flow cell: %s\n" % (config.get("Options","runID"))
-    message += "Run time: %s\n" % runTime
+    message += "Sequencer: {}\n".format(get_sequencer(os.path.join(config.get("Options","baseDir"),config.get("Options","runID"))))
+    message += "Read geometry: {}\n".format(get_read_geometry(os.path.join(config.get("Options","baseDir"),config.get("Options","runID"))))
+    message += "bcl2fastq_pipeline run time: %s\n" % runTime
     #message += "Data transfer: %s\n" % transferTime
     message += msg
 
