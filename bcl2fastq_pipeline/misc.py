@@ -171,7 +171,7 @@ def finishedEmail(config, msg, runTime) :
     msg['Subject'] = "[bcl2fastq_pipeline] {} processed".format(", ".join(projects))
     msg['From'] = config.get("Email","fromAddress")
     msg['To'] = config.get("Email","finishedTo")
-    msg['Date'] = formdate(localtime=True)
+    msg['Date'] = formatdate(localtime=True)
 
     msg.attach(MIMEText(message))
 
