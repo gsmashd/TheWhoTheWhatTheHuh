@@ -109,7 +109,8 @@ while True:
     except :
         #Unrecoverable error
         syslog.syslog("Couldn't send the finished email! Quiting")
-        sys.exit()
+        bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during finishedEmail()")
+        sleep(config)
 
     #Zip project archives
     try:
