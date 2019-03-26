@@ -18,7 +18,7 @@ import datetime as dt
 import bcl2fastq_pipeline.afterFastq as af
 
 
-CUSTOM_OPTS = ['Organism', 'Libprep', 'SingleCell','RemoveHumanReads','SensitiveData','ReverseComplementIndexP5','ReverseComplementIndexP7','TrimAdapter']
+CUSTOM_OPTS = ['Organism', 'Libprep', 'User', 'SingleCell','RemoveHumanReads','SensitiveData','ReverseComplementIndexP5','ReverseComplementIndexP7','TrimAdapter']
 
 
 #Returns True on processed, False on unprocessed
@@ -67,7 +67,7 @@ def parseSampleSheet(ss):
         elif opts_data:
             key = line.split(',')[0]
             value = line.split(',')[1]
-            opt_d[key] = value.rstrip() if key in ['Organism','Libprep'] else str2bool(value.rstrip())
+            opt_d[key] = value.rstrip() if key in ['Organism','Libprep','User'] else str2bool(value.rstrip())
     return ss,opt_d
 
 def str2bool(s):
@@ -167,7 +167,7 @@ def setConfFromOpts(config,opts,use_dict_values=True):
         opts = dict.fromkeys(CUSTOM_OPTS,False)
     for k,v in opts.items():
         if use_dict_values:
-            config.set("Options",k,v if k in ['Organism','Libprep'] else bool2strint(v))
+            config.set("Options",k,v if k in ['Organism','Libprep',"User"] else bool2strint(v))
         else:
             config.set("Options",k,"")
     return config
