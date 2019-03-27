@@ -70,9 +70,9 @@ def getFCmetrics(root) :
                 QualSum[1] += int(tile[1][2][2].text)
         #Number of clusters (%passing filter)
         try:
-            message += "\t%i (%5.2f%%)" % (clusterCount,100*clusterCountPass/clusterCount)
+            message += "\t%s (%5.2f%%)" % ("{:,}".format(clusterCount).replace(","," "),100*clusterCountPass/clusterCount)
         except:
-            message += "\t%i (NA)" % (clusterCount)
+            message += "\t%s (NA)" % ("{:,}".format(clusterCount).replace(","," "))
         #%bases above Q30
         if(baseYield[1] > 0) :
             try:
