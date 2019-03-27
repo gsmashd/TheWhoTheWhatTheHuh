@@ -155,6 +155,7 @@ def finishedEmail(config, msg, runTime) :
     projects = get_project_names(get_project_dirs(config))
 
     message = "Short summary for {}.\n\n".format(", ".join(projects))
+    message += "User: {}\n".format(config.get("Options","User")) if config.get("Options","User") != "N/A" else ""
     message += "Flow cell: %s\n" % (config.get("Options","runID"))
     message += "Sequencer: {}\n".format(get_sequencer(os.path.join(config.get("Paths","baseDir"),config.get("Options","runID"))))
     message += "Read geometry: {}\n".format(get_read_geometry(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"))))
