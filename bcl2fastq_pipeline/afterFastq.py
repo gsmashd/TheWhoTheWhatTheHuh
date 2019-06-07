@@ -32,7 +32,8 @@ SEQUENCERS = {
         'SN7001334' : 'HiSeq 2500',
         'K00251' : 'HiSeq 4000',
         'M02675' : 'MiSeq NTNU',
-        'M03942' : 'MiSeq StOlav'
+        'M03942' : 'MiSeq StOlav',
+        'M05617' : 'MiSeq SINTEF'
         }
 
 QC_PLACEMENT = {
