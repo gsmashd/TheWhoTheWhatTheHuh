@@ -527,26 +527,34 @@ def samplesheet_worker(config,project_dirs):
             #sample_df, _ = cm.get_data_from_samplesheet(ss)
             sample_df, _ = cm.get_project_samples_from_samplesheet(ss,[os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))] , pid)
 
+        sample_ids = sample_df['Sample_ID']
         #project_dirs = cm.inspect_dirs([os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
         sample_dict = cm.find_samples(sample_df,[os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))])
 
         keep_cols = ['Sample_ID']
+        try:
+            if not config.get("Options","sampleSubForm") == "":
+                with open(config.get("Options","sampleSubForm"),'r') as ssub:
+                    #TODO: get message from merge (check intersection between sample sheet and sample-sub-form and attach message to email
+                    sample_dict = cm.merge_samples_with_submission_form(ssub,sample_dict)
 
-        if not config.get("Options","sampleSubForm") == "":
-            with open(config.get("Options","sampleSubForm"),'r') as ssub:
-                sample_dict = cm.merge_samples_with_submission_form(ssub,sample_dict)
-
-            keep_cols.extend(['External_ID', 'Sample_Group','Sample_Biosource','Customer_Comment', 'RIN', '260/280', '260/230'])
-            try:
+                keep_cols.extend(['External_ID', 'Sample_Group','Sample_Biosource','Customer_Comment', 'RIN', '260/280', '260/230'])
+                try:
+                    sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
+                except Exception as e:
+                    #TODO: attach message to error email
+                    sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[['Sample_ID']]
+            else:
                 sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
-            except Exception as e:
-                sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[['Sample_ID', 'External_ID', 'Sample_Group','Sample_Biosource','Customer_Comment']]
-        else:
-            sample_df = pd.DataFrame.from_dict(sample_dict,orient='index')[keep_cols]
+        except Exception as e:
+            #TODO: attach message to error email
+            sample_df = sample_ids
+
         sample_df.to_csv(
             os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"{}_samplesheet.tsv".format(pid)),
             index=False,
-            sep='\t'
+            sep='\t',
+            header=True
             )
 
 
