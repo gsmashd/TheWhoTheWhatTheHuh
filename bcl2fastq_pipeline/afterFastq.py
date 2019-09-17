@@ -353,6 +353,8 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
 
     if not seq_stats:
         mqc_conf['intro_text'] = "This report is generated for projects run at <a href=\"https://www.ntnu.edu/mh/gcf\">Genomics Core Facility, NTNU, Trondheim</a>. The results are reported per sample.<br/><br/>\n\nIn the delivered zipped archive ({pname}.7za) , you will find the following content:<br/>\n<strong>- {pname}:</strong> A folder containing the demultiplexed fastq-files (sequence data).<br/>\n<strong>- QC_{pname}:</strong> A folder containing output from quality control software <a href=\"https://www.bioinformatics.babraham.ac.uk/projects/fastqc\">Fastqc</a>, <a href=\"https://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/\">fastq_screen</a> and <a href=\"https://multiqc.info/\">MultiQC</a> together with this report, multiqc_{pname}.html<br/>\n<strong>- Stats:</strong> A folder containing statistics from the sequencer. A summary report of the sequencer stats can be found in sequencer_stats_{pname}.html<br/>\n<strong>- Undetermined*.fastq.gz:</strong> Fastq-files with indexes that did not map to any samples.<br/>\n<strong>- {pname}_samplesheet.tsv:</strong> A samplesheet containing all the submitted samples together with info from user sample submission form, if apliccable.<br/><br/>\n\nThe data archive is compressed and (if sensitive) password protected using the <a href=\"https://innsida.ntnu.no/wiki/-/wiki/English/7-zip\">7zip</a> software available on all NTNU PCs.\n To unzip the archive from a linux/mac command line, execute the following command.<br/><br/>\n\nIf you were given a password:<br/>\n7za x {pname}.7za -p'your_password'<br/><br/>\n\nIf you were not given a password:<br/>\n7za x {pname}.7za<br/><br/>\nIf you don't have 7za available from your command line, you must install the package p7zip-full.".format(pname=mqc_conf['title'])
+        software = get_software_versions(config)
+        mqc_conf['intro_text'] '\n'.join([mqc_conf['intro_text'],'Software versions',software])
 
     report_header = [
     {'Contact E-mail': contact},
@@ -624,6 +626,22 @@ def get_project_dirs(config):
     projectDirs = glob.glob("%s/%s/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID")))
     projectDirs.extend(glob.glob("%s/%s/*/*/*.fastq.gz" % (config.get("Paths","outputDir"), config.get("Options","runID"))))
     return toDirs(projectDirs)
+
+def get_software_versions(config):
+    versions = {}
+    versions['GCF-NTNU bcl2fastq pipeline'] = subprocess.check_output("cat /bfq_version/bfq.version",shell=True).rstrip()
+    if config.get("Options","SingleCell") == "1":
+        subprocess.check_output("cellranger mkfastq --version",stderr=subprocess.STDOUT,shell=True).split(b'\n')[1].split(b' ')[-1].rstrip().strip(b'(').strip(b')')
+    else:
+        versions['bcl2fastq'] = subprocess.check_output("bcl2fastq --version",stderr=subprocess.STDOUT,shell=True).split(b'\n')[1].split(b' ')[1].rstrip()
+        versions['fastq_screen'] = subprocess.check_output("fastq_screen --version",shell=True).split(b' ')[-1].rstrip()
+    versions['FastQC'] = subprocess.check_output("fastqc --version",shell=True).split(b' ')[-1].rstrip()
+    versions['clumpify/bbmap'] = subprocess.check_output("clumpify.sh --version",stderr=subprocess.STDOUT,shell=True).split(b'\n')[1].split(b' ')[-1].rstrip()
+    versions['multiqc'] = subprocess.check_output("multiqc --version",stderr=subprocess.STDOUT,shell=True).split(b' ')[-1].rstrip()
+    software = '\n'.join('{}: {}'.format(key,val.decode()) for (key,val) in versions.items())
+    with open(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"software.versions"),'w+') as sf:
+        sf.write(software)
+    return software
 
 
 #All steps that should be run after `make` go here
