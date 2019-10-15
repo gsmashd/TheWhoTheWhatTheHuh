@@ -342,6 +342,18 @@ def md5sum_worker(project_dirs) :
         subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
 
+def md5sum_archive_worker(project_dirs) :
+    global localConfig
+    config = localConfig
+    old_wd = os.getcwd()
+    os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+    pnames = get_project_names(project_dirs)
+    for p in pnames:
+        cmd = "find . -type f -name '*.7za' | parallel md5sum > md5sum_archives.txt"
+        syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),p))
+        subprocess.check_call(cmd, shell=True)
+    os.chdir(old_wd)
+
 def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
     
     odir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))
@@ -505,7 +517,7 @@ def archive_worker(config):
             with open(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),"encryption.{}".format(p)),'w') as pwfile:
                 pwfile.write('{}\n'.format(pw))
         opts = "-p{}".format(pw) if pw else ""
-        cmd = "7za a {opts} {flowdir}/{pnr}.7za {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/{pnr}_samplesheet.tsv {flowdir}/SampleSheet.csv {flowdir}/software.versions".format(
+        cmd = "7za a {opts} {flowdir}/{pnr}.7za {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/{pnr}_samplesheet.tsv {flowdir}/SampleSheet.csv {flowdir}/Sample-Submission-Form.xlsx {flowdir}/md5sums_{pnr}.txt {flowdir}/software.versions".format(
                 opts = opts,
                 flowdir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
                 pnr = p
@@ -686,13 +698,13 @@ def postMakeSteps(config) :
         p.join()
 
     #clumpify
-
+    """
     p = mp.Pool(int(config.get("Options","clumpifyWorkerThreads")))
     p.map(clumpify_worker, sampleFiles)
     p.close()
     p.join()
     clumpify_mark_done(config)
-
+    """
     #FastQC
 
     p = mp.Pool(int(config.get("Options","fastqcThreads")))
