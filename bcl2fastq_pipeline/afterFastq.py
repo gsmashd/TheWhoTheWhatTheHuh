@@ -765,6 +765,7 @@ def postMakeSteps(config) :
     return(message)
 
 def finalize(config):
+    projectDirs = get_project_dirs(config)
     #md5sum fastqs
     md5sum_worker(projectDirs)
     #zip arhive
