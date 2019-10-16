@@ -197,3 +197,31 @@ def finishedEmail(config, msg, runTime) :
     s = smtplib.SMTP(config.get("Email","host"))
     s.send_message(msg)
     s.quit()
+
+def finalizedEmail(config, msg, finalizeTime, runTime) :
+    lanes = config.get("Options", "lanes")
+
+    projects = get_project_names(get_project_dirs(config))
+
+    message = "{} has been finalized and prepared for delivery.\n\n".format(", ".join(projects))
+    message += "md5sum and 7zip runtime: %s\n" % finalizeTime
+    message += "Total runtime for bcl2fastq_pipeline: %s\n" % runTime
+    #message += "Data transfer: %s\n" % transferTime
+    message += msg
+
+
+    odir = os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"))
+
+    #with open(os.path.join(config.get("Paths", "reportDir"),'{}.report'.format(config.get("Options","runID"))),'w') as report:
+    #    report.write(msg)
+    msg = MIMEMultipart()
+    msg['Subject'] = "[bcl2fastq_pipeline] {} finalized".format(", ".join(projects))
+    msg['From'] = config.get("Email","fromAddress")
+    msg['To'] = config.get("Email","errorTo")
+    msg['Date'] = formatdate(localtime=True)
+
+    msg.attach(MIMEText(message))
+
+    s = smtplib.SMTP(config.get("Email","host"))
+    s.send_message(msg)
+    s.quit()

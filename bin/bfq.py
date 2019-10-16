@@ -100,8 +100,8 @@ while True:
         bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during parseConversionStats")
         sleep(config)
         continue
-
-    runTime = datetime.datetime.now()-startTime
+    endTime = datetime.datetime.now()
+    runTime = endTime-startTime
 
     #Email finished message
     try :
@@ -112,6 +112,27 @@ while True:
         bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during finishedEmail()")
         sleep(config)
 
+    #Finalize
+    try:
+        bcl2fastq_pipeline.afterFastq.finalize(config)
+    except Exception as e:
+        syslog.syslog("Got an error during finalize!\n")
+        bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), str(e))
+        sleep(config)
+        continue
+
+    finalizeTime = datetime.datetime.now()-endTime
+    runTime += finalizeTime
+
+    try :
+        bcl2fastq_pipeline.misc.finalizedEmail(config, "", finalizeTime, runTime)
+    except :
+        #Unrecoverable error
+        syslog.syslog("Couldn't send the finalize email! Quiting")
+        bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during finishedEmail()")
+        sleep(config)
+
+    """
     #Zip project archives
     try:
         bcl2fastq_pipeline.afterFastq.archive_worker(config)
@@ -129,7 +150,7 @@ while True:
         bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), str(e))
         sleep(config)
         continue
-
+    """
     #Mark the flow cell as having been processed
     bcl2fastq_pipeline.findFlowCells.markFinished(config)
 

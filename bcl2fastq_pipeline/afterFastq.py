@@ -334,7 +334,9 @@ def md5sum_worker(project_dirs) :
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
     pnames = get_project_names(project_dirs)
     for p in pnames:
-        cmd = "find {} -type f -name '*.fastq.gz' | parallel md5sum > {}".format(
+        if os.path.exists('md5sums_{}.txt'.format(p)):
+            continue
+        cmd = "find {} -type f -name '*.fastq.gz' | parallel -j 5 md5sum > {}".format(
             p,
             'md5sums_{}.txt'.format(p)
         )
@@ -709,8 +711,10 @@ def postMakeSteps(config) :
     p.close()
     p.join()
 
+    """
     #md5sum
     md5sum_worker(projectDirs)
+    """
 
     #fastq_screen
     p = mp.Pool(int(config.get("Options", "fastqScreenThreads")))
@@ -759,3 +763,12 @@ def postMakeSteps(config) :
 
 
     return(message)
+
+def finalize(config)
+    #md5sum fastqs
+    md5sum_worker(projectDirs)
+    #zip arhive
+    archive_worker(config)
+    #md5sum archive
+    md5sum_archive_worker(config)
+    return None
