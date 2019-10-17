@@ -387,10 +387,13 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
         s_df = pd.read_csv(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title'])),sep='\t')
         s_df.index = s_df['Sample_ID']
 
+        max_260_230 = s_df['260/230'].max() if '260/230' in s_df.columns else 3
+        max_260_280 = s_df['260/280'].max() if '260/280' in s_df.columns else 3
+
         MAX = {
             'RIN': 10,
-            '260/230': max(3,s_df['260/230'].max()),
-            '260/280': max(3,s_df['260/280'].max())
+            '260/230': max_260_230,
+            '260/280': max_260_280
             }
 
         COL_SCALE = {
