@@ -527,6 +527,27 @@ def archive_worker(config):
         syslog.syslog("[archive_worker] Zipping %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.7za'.format(p)))
         subprocess.check_call(cmd, shell=True)
 
+def instrument_archive_worker(config):
+    if not os.path.exists(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'))):
+        os.path.makedirs(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID')),exist_ok=True)
+    if os.path.exists(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'), '{}.7za'.format(config.get('Options','runID')))):
+        os.remove(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'), '{}.7za'.format(config.get('Options','runID'))))
+    pw = None
+    if config.get("Options","SensitiveData") == "1":
+        pw = subprocess.check_output("xkcdpass -n 5 -d '-' -v '[a-z]'",shell=True).decode().strip('\n')
+        with open(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'),"encryption.{}".format(config.get('Options','runID'))),'w') as pwfile:
+            pwfile.write('{}\n'.format(pw))
+    opts = "-p{}".format(pw) if pw else ""
+    cmd = "7za a {opts} {arch_dir}/{fnm}.7za {instr}".format(
+            opts = opts,
+            arch_dir = os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID')),
+            fnm = config.get('Options','runID'),
+            instr = os.path.join(config.get('Paths','baseDir'), config.get('Options','runID'))
+        )
+    syslog.syslog("[instrument_archive_worker] Zipping instruments." )
+    subprocess.check_call(cmd, shell=True)
+    
+
 def samplesheet_worker(config,project_dirs):
     """
     TODO:
@@ -775,4 +796,7 @@ def finalize(config):
     archive_worker(config)
     #md5sum archive
     md5sum_archive_worker(config)
+    #archive instruments
+    instrument_archive_worker(config)
+
     return None
