@@ -63,11 +63,11 @@ def archive_flowcell(args,force=False):
         confirm = input("Delete? (yes/no)")
     if confirm == 'yes':
         deletions = [os.path.join(flowcell,pid) for pid in fc_for_deletion['project']]
-        deletion.append("{}/*.fastq.gz".format(flowcell))
+        deletions.append("{}/*.fastq.gz".format(flowcell))
         deletions.append("{}/*.7za".format(flowcell))
         cmd = "rm -rf {}".format(" ".join(deletions))
         print("DELETING: {}".format(cmd))
-        subprocess.check_call(cmd, shell=True)
+        #subprocess.check_call(cmd, shell=True)
         flowcells_processed = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell,'archived'] = datetime.datetime.now()
         flowcells_processed.to_csv(
             os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'),
