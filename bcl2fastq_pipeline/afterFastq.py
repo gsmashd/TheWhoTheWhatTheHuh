@@ -36,6 +36,15 @@ SEQUENCERS = {
         'M05617' : 'MiSeq SINTEF'
         }
 
+SEQUENCER_OUTPUTFOLDER = {
+        'NB501038' : 'nextseq500',
+        'SN7001334' : 'hiseq2500',
+        'K00251' : 'hiseq4000',
+        'M02675' : 'miseq',
+        'M03942' : 'miseq',
+        'M05617' : 'miseq'
+}
+
 QC_PLACEMENT = {
     'External_ID': 0,
     'Sample_Biosource': 10,
@@ -327,6 +336,9 @@ def get_read_geometry(run_dir):
 def get_sequencer(run_id):
 	return SEQUENCERS.get(run_id.split('_')[1],'Sequencer could not be automatically determined.')
 
+def get_sequencer_outputfolder(run_id):
+	return SEQUENCER_OUTPUTFOLDER.get(run_id.split('_')[1],'Sequencer could not be automatically determined.')
+
 def md5sum_worker(project_dirs) :
     global localConfig
     config = localConfig
@@ -538,11 +550,12 @@ def instrument_archive_worker(config):
         with open(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'),"encryption.{}".format(config.get('Options','runID'))),'w') as pwfile:
             pwfile.write('{}\n'.format(pw))
     opts = "-p{}".format(pw) if pw else ""
+    seq_out = get_sequencer_outputfolder(config.get('Options','runID'))
     cmd = "7za a {opts} {arch_dir}/{fnm}.7za {instr}".format(
             opts = opts,
             arch_dir = os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID')),
             fnm = config.get('Options','runID'),
-            instr = os.path.join(config.get('Paths','baseDir'), config.get('Options','runID'))
+            instr = os.path.join(config.get('Paths','baseDir'), seq_out,"data",config.get('Options','runID'))
         )
     syslog.syslog("[instrument_archive_worker] Zipping instruments." )
     subprocess.check_call(cmd, shell=True)
