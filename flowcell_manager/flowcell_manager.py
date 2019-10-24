@@ -5,6 +5,7 @@ import sys
 import pandas as pd
 import os
 import subprocess
+import datetime
 
 HELP_MESSAGE = """
 flowcell_manager.py usage \n
@@ -29,6 +30,7 @@ def add_flowcell(project,path,timestamp):
             'project': project,
             'flowcell_path': path,
             'timestamp': timestamp,
+            'archived': 0
             }
             ]
     
@@ -38,11 +40,41 @@ def add_flowcell(project,path,timestamp):
     flowcells_processed.to_csv(
             os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'),
             index=False,
-            columns = ['project','flowcell_path','timestamp'],
+            columns = ['project','flowcell_path','timestamp', 'archived'],
             )
 
 
 def delete_flowcell(args,force=False):
+    if '--force' in args:
+        force = True
+        args.remove('--force')
+    flowcell = args[0]
+    config = bcl2fastq_pipeline.getConfig.getConfig()
+    flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
+    fc_for_deletion = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
+    if fc_for_deletion.empty:
+        print("No such flowcell in inventory!")
+        return
+    confirm = 'yes'
+    if not force:
+        print("Please confirm deletion of the following flowcell and the contained projects.\n")
+        print(fc_for_deletion)
+        confirm = input("Delete? (yes/no)")
+    if confirm == 'yes':
+        deletions = [os.path.join(flowcell,pid) for pid in fc_for_deletion['project']]
+        deletion.append("{}/*.fastq.gz".format(flowcell))
+        deletions.append("{}/*.7za".format(flowcell))
+        cmd = "rm -rf {}".format(" ".join(deletions))
+        print("DELETING: {}".format(cmd))
+        subprocess.check_call(cmd, shell=True)
+        flowcells_processed = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell,'archived'] = datetime.datetime.now()
+        flowcells_processed.to_csv(
+            os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'),
+            index=False,
+            columns = ['project','flowcell_path','timestamp','archived'],
+            )
+ 
+def rerun_flowcell(args,force=False):
     if '--force' in args:
         force = True
         args.remove('--force')
@@ -66,9 +98,8 @@ def delete_flowcell(args,force=False):
         flowcells_processed.to_csv(
             os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'),
             index=False,
-            columns = ['project','flowcell_path','timestamp'],
+            columns = ['project','flowcell_path','timestamp','archived'],
             )
- 
 
 def list_processed():
     config = bcl2fastq_pipeline.getConfig.getConfig()
@@ -92,9 +123,9 @@ def list_flowcell_all(flowcell):
     return flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
 
 def pretty_print(df):
-    print("Project \t Flowcell path \t Timestamp")
+    print("Project \t Flowcell path \t Timestamp \t Archived")
     for i, row in df.iterrows():
-        print("{}\t{}\t{}".format(row['project'], row['flowcell_path'], row['timestamp']))
+        print("{}\t{}\t{}\t{}".format(row['project'], row['flowcell_path'], row['timestamp'], row['archived']))
 
 def main(argv):
 
