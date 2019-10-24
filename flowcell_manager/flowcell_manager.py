@@ -11,7 +11,8 @@ HELP_MESSAGE = """
 flowcell_manager.py usage \n
 \n
 flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
-flowcell_manager.py delete-fowcell flowcell-path --- deletes the flowcell and all containing projects\n\t\t use with --force to omit prompt\n
+flowcell_manager.py archive-fowcell flowcell-path --- deletes the fastq.gz files and the .7za files for the flowcell\n\t\t use with --force to omit prompt\n
+flowcell_manager.py rerun-fowcell flowcell-path --- deletes the flowcell and all containing projects\n\t\t use with --force to omit prompt\n
 flowcell_manager.py list --- lists all processed projects in inventory file \n
 flowcell_manager.py list-all --- lists all projects in inventory file (also unprocessed)\n
 flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
@@ -44,7 +45,7 @@ def add_flowcell(project,path,timestamp):
             )
 
 
-def delete_flowcell(args,force=False):
+def archive_flowcell(args,force=False):
     if '--force' in args:
         force = True
         args.remove('--force')
@@ -132,8 +133,10 @@ def main(argv):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     if argv[0] == 'add':
         add_flowcell(*argv[1:])
-    elif argv[0] == 'delete-flowcell':
-        delete_flowcell(argv[1:])
+    elif argv[0] == 'archive-flowcell':
+        archive_flowcell(argv[1:])
+    elif argv[0] == 'rerun-flowcell':
+        rerun_flowcell(argv[1:])
     elif argv[0] == 'list':
         pretty_print(list_processed())
     elif argv[0] == 'list-all':
