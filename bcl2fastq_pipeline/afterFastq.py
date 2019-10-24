@@ -529,7 +529,7 @@ def archive_worker(config):
 
 def instrument_archive_worker(config):
     if not os.path.exists(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'))):
-        os.path.makedirs(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID')),exist_ok=True)
+        os.makedirs(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID')),exist_ok=True)
     if os.path.exists(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'), '{}.7za'.format(config.get('Options','runID')))):
         os.remove(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'), '{}.7za'.format(config.get('Options','runID'))))
     pw = None
