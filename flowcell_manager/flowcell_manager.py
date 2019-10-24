@@ -68,7 +68,7 @@ def archive_flowcell(args,force=False):
         cmd = "rm -rf {}".format(" ".join(deletions))
         print("DELETING: {}".format(cmd))
         #subprocess.check_call(cmd, shell=True)
-        flowcells_processed = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell,'archived'] = datetime.datetime.now()
+        flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell,'archived'] = datetime.datetime.now()
         flowcells_processed.to_csv(
             os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'),
             index=False,
