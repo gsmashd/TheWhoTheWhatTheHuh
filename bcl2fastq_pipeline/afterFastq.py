@@ -37,9 +37,9 @@ SEQUENCERS = {
         }
 
 SEQUENCER_OUTPUTFOLDER = {
-        'NB501038' : 'nextseq500',
+        'NB501038' : 'nextseq',
         'SN7001334' : 'hiseq2500',
-        'K00251' : 'hiseq4000',
+        'K00251' : 'hiseq',
         'M02675' : 'miseq',
         'M03942' : 'miseq',
         'M05617' : 'miseq'
