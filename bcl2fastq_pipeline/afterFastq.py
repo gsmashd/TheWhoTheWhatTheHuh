@@ -346,11 +346,11 @@ def md5sum_worker(project_dirs) :
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
     pnames = get_project_names(project_dirs)
     for p in pnames:
-        if os.path.exists('md5sums_{}.txt'.format(p)):
+        if os.path.exists('md5sum_{}_fastq.txt'.format(p)):
             continue
         cmd = "find {} -type f -name '*.fastq.gz' | parallel -j 5 md5sum > {}".format(
             p,
-            'md5sums_{}.txt'.format(p)
+            'md5sum_{}_fastq.txt'.format(p)
         )
         syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),p))
         subprocess.check_call(cmd, shell=True)
@@ -361,7 +361,11 @@ def md5sum_archive_worker(project_dirs) :
     config = localConfig
     old_wd = os.getcwd()
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
-    cmd = "find . -name '*.7za' | parallel md5sum > md5sum_archives.txt"
+    pnames = get_project_names(project_dirs)
+    for p in pnames:
+        if os.path.exists('md5sum_{}_archive.txt'.format(p)):
+            continue
+        cmd = "md5sum {}.7za > md5sum_{}_archive.txt".format(p)
     syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
     subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
@@ -531,7 +535,7 @@ def archive_worker(config):
             with open(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),"encryption.{}".format(p)),'w') as pwfile:
                 pwfile.write('{}\n'.format(pw))
         opts = "-p{}".format(pw) if pw else ""
-        cmd = "7za a {opts} {flowdir}/{pnr}.7za {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/{pnr}_samplesheet.tsv {flowdir}/SampleSheet.csv {flowdir}/Sample-Submission-Form.xlsx {flowdir}/md5sums_{pnr}.txt {flowdir}/software.versions".format(
+        cmd = "7za a {opts} {flowdir}/{pnr}.7za {flowdir}/{pnr}/ {flowdir}/QC_{pnr} {flowdir}/Stats {flowdir}/Undetermined*.fastq.gz {flowdir}/{pnr}_samplesheet.tsv {flowdir}/SampleSheet.csv {flowdir}/Sample-Submission-Form.xlsx {flowdir}/md5sum_{pnr}_fastq.txt {flowdir}/software.versions".format(
                 opts = opts,
                 flowdir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
                 pnr = p
@@ -748,10 +752,6 @@ def postMakeSteps(config) :
     p.close()
     p.join()
 
-    """
-    #md5sum
-    md5sum_worker(projectDirs)
-    """
 
     #fastq_screen
     p = mp.Pool(int(config.get("Options", "fastqScreenThreads")))
