@@ -18,7 +18,7 @@ import datetime as dt
 import bcl2fastq_pipeline.afterFastq as af
 
 
-CUSTOM_OPTS = ['Organism', 'Libprep', 'User', 'SingleCell','RemoveHumanReads','SensitiveData','ReverseComplementIndexP5','ReverseComplementIndexP7','TrimAdapter']
+CUSTOM_OPTS = ['Organism', 'Libprep', 'User', 'Rerun','SingleCell','RemoveHumanReads','SensitiveData','ReverseComplementIndexP5','ReverseComplementIndexP7','TrimAdapter']
 
 
 #Returns True on processed, False on unprocessed
@@ -30,11 +30,25 @@ def flowCellProcessed(config) :
     flowcells = fm.list_flowcell_all(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")))
     path = "%s/%s%s/fastq.made" % (config.get("Paths","outputDir"), config.get("Options","runID"), lanes)
     if os.access(path, os.F_OK):
-        return True
+        if rerunFlowcell(config):
+            return False
+        else:
+            return True
     elif not flowcells.empty:
         return True
     return False
 
+#Determine if the flowcell should be rerun
+def rerunFlowcell(config):
+    seq_data_path = af.SEQUENCER_OUTPUTFOLDER[config.get("Paths","runID").split("_")[-2]]
+    ss, opts = getSampleSheets(os.path.join(config.get("Paths","baseDir"),seq_data_paht,config.get("Paths","runID")))
+    if opts.get("rerun",False) == True:
+        prev_start = os.path.getmtime(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),"SampleSheet.csv"))
+        instr_ss = os.path.getmtime(ss)
+        if instr_ss > prev_start:
+            fm.rerun_flowcell(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),force=True)
+            return True
+    return False
 
 # Get the number of lanes in the run. This might not match the number of lanes in the sampleSheet
 def getNumLanes(d):
@@ -67,7 +81,7 @@ def parseSampleSheet(ss):
         elif opts_data:
             key = line.split(',')[0]
             value = line.split(',')[1]
-            opt_d[key] = value.rstrip() if key in ['Organism','Libprep','User'] else str2bool(value.rstrip())
+            opt_d[key] = value.rstrip() if key in ['Organism','Libprep','User','Rerun'] else str2bool(value.rstrip())
     return ss,opt_d
 
 def str2bool(s):
@@ -169,7 +183,7 @@ def setConfFromOpts(config,opts,use_dict_values=True):
         opts = dict.fromkeys(CUSTOM_OPTS,False)
     for k,v in opts.items():
         if use_dict_values:
-            config.set("Options",k,v if k in ['Organism','Libprep',"User"] else bool2strint(v))
+            config.set("Options",k,v if k in ['Organism','Libprep',"User",'Rerun'] else bool2strint(v))
         else:
             config.set("Options",k,"")
     return config
