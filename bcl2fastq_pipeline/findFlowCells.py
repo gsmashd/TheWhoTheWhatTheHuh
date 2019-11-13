@@ -32,8 +32,6 @@ def flowCellProcessed(config) :
     if os.access(path, os.F_OK):
         if rerunFlowcell(config):
             return False
-        else:
-            return True
     elif not flowcells.empty:
         return True
     return False
