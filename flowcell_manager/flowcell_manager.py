@@ -105,7 +105,7 @@ def rerun_flowcell(args,force=False):
 def list_processed():
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    return flowcells_processed.loc[(flowcells_processed['timestamp'] != '0')]
+    return flowcells_processed.loc[(flowcells_processed['timestamp'] != '0') | (flowcells_processed['archived'] != '0')]
 
 def list_project(project):
     config = bcl2fastq_pipeline.getConfig.getConfig()
