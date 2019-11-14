@@ -540,6 +540,8 @@ def archive_worker(config):
                 flowdir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')),
                 pnr = p
             )
+        if config.get("Options","singleCell") == "1":
+            cmd += " {}".format(config.get("Options","runID").split("_")[-1])
         syslog.syslog("[archive_worker] Zipping %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'{}.7za'.format(p)))
         subprocess.check_call(cmd, shell=True)
 

@@ -98,11 +98,11 @@ def bcl2fq(config) :
         os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID"),'InterOp'),
         os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),'InterOp')
         )
+    old_wd = os.getcwd()
+    os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
 
     if config.get("Options","singleCell") == "1":
         #TODO: --interop-dir not supported for cellranger
-        old_wd = os.getcwd()
-        os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
         cmd = "{cellranger_cmd} --output-dir={output_dir} --sample-sheet={sample_sheet} --run={run_dir} {cellranger_options}".format(
                 cellranger_cmd = config.get("cellranger","cellranger_mkfastq"),
                 output_dir = "{}/{}".format(
@@ -117,7 +117,6 @@ def bcl2fq(config) :
                     ),
                 cellranger_options = config.get("cellranger","cellranger_mkfastq_options")
                 )
-        os.chdir(old_wd)
     else:
         cmd = "%s %s --sample-sheet %s -o %s/%s%s -R %s/%s/data/%s --interop-dir %s/%s/InterOp" % (
             config.get("bcl2fastq","bcl2fastq"),
@@ -138,6 +137,7 @@ def bcl2fq(config) :
     subprocess.check_call(cmd, stdout=logOut, stderr=logErr, shell=True)
     logOut.close()
     logErr.close()
+    os.chdir(old_wd)
 
 def getOffSpecies(fname) :
     total = 0
