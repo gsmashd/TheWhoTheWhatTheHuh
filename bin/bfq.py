@@ -132,25 +132,6 @@ while True:
         bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during finishedEmail()")
         sleep(config)
 
-    """
-    #Zip project archives
-    try:
-        bcl2fastq_pipeline.afterFastq.archive_worker(config)
-    except Exception as e:
-        syslog.syslog("Got an error during zipping\n")
-        bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), str(e))
-        sleep(config)
-        continue
-
-    #md5sum final archive
-    try:
-        bcl2fastq_pipeline.afterFastq.md5sum_archive_worker(config)
-    except Exception as e:
-        syslog.syslog("Got an error during md5sum of archive\n")
-        bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), str(e))
-        sleep(config)
-        continue
-    """
     #Mark the flow cell as having been processed
     bcl2fastq_pipeline.findFlowCells.markFinished(config)
 

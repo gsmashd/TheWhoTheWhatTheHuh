@@ -366,8 +366,8 @@ def md5sum_archive_worker(project_dirs) :
         if os.path.exists('md5sum_{}_archive.txt'.format(p)):
             continue
         cmd = "md5sum {}.7za > md5sum_{}_archive.txt".format(p)
-    syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
-    subprocess.check_call(cmd, shell=True)
+        syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+        subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
 
 def set_mqc_conf_header(config, mqc_conf, seq_stats=False):

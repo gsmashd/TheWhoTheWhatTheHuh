@@ -1,6 +1,7 @@
 ToDo
 *.swp
 *.swo
+*.swn
 *.egg-info
 build
 dist
