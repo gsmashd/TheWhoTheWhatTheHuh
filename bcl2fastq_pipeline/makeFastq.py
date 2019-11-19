@@ -76,6 +76,7 @@ def fixNames(config) :
     for fname in names:
         if "_001.fastq.gz" in fname:
             fnew = fname.replace("_001.fastq.gz", ".fastq.gz")
+            fnew = re.sub("_S[0-9]+","",fnew) 
             syslog.syslog("Moving %s to %s\n" % (fname, fnew))
             shutil.move(fname, fnew)
 
