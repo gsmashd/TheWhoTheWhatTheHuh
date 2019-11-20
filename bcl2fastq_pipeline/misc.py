@@ -124,9 +124,9 @@ def getFCmetricsImproved(config):
             break
 
     for i in range(len(read_start)-1):
-	if lines[read_start[i]].endswith("(I)\n"):
+        if lines[read_start[i]].endswith("(I)\n"):
             continue
-	tmpfh = tmp.NamedTemporaryFile(mode="w+")
+        tmpfh = tmp.NamedTemporaryFile(mode="w+")
 	tmpfh.writelines(lines[read_start[i]+1:read_start[i+1]])
 	tmpfh.seek(0)
 	df = pd.read_csv(tmpfh)
@@ -139,8 +139,6 @@ def getFCmetricsImproved(config):
 	df = df.rename(columns=mapper)
         message += "{} metrics\n".format(lines[read_start[i].rstrip()])
 	message += df.to_string(index=False)
-
-
     return message
 
 def parseConversionStats(config) :
