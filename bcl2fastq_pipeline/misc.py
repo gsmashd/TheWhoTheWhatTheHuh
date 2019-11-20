@@ -1,7 +1,8 @@
 """
 Misc. functions
 """
-
+import pandas as pd
+import tempfile as tmp
 import configparser
 import shutil
 import smtplib
@@ -97,6 +98,48 @@ def getFCmetrics(root) :
                 message += "\t%4.1f\n" % (QualSum[0]/float(baseYield[0]))
             except:
                 message += "\tNA\n"
+
+    return message
+
+def getFCmetricsImproved(config):
+    message = ""
+    try:
+        with open(os.path.join(config.get("Options","outputDir"),config.get("Options","runID"),"Stats","interop_summary.csv"),"r") as fh:
+            header = False
+            while not header:
+                line = fh.readline()
+                if line.startswith("\n"):
+                    line = fh.readline()
+                    header = True
+            lines = fh.readlines()
+    except Exception as e:
+        return None
+
+    read_start = []
+    for i,l in enumerate(lines):
+	if l.startswith("Read"):
+            read_start.append(i)
+	elif l.startswith("Extracted"):
+            read_start.append(i)
+            break
+
+    for i in range(len(read_start)-1):
+	if lines[read_start[i]].endswith("(I)\n"):
+            continue
+	tmpfh = tmp.NamedTemporaryFile(mode="w+")
+	tmpfh.writelines(lines[read_start[i]+1:read_start[i+1]])
+	tmpfh.seek(0)
+	df = pd.read_csv(tmpfh)
+	tmpfh.close()
+	df = df[["Lane","Surface","Density","Cluster PF","Reads","Aligned","%>=Q30"]]
+	df = df[df["Surface"]=='-']
+	df = df.drop(columns=["Surface"])
+
+	mapper = {"Cluster PF": "% Cluster PF", "Reads": "Reads (M)", "Aligned": "% PhiX"}
+	df = df.rename(columns=mapper)
+        message += "{} metrics\n".format(lines[read_start[i].rstrip()])
+	message += df.to_string(index=False)
+
 
     return message
 
