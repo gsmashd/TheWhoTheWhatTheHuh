@@ -137,7 +137,7 @@ def getFCmetricsImproved(config):
 
         mapper = {"Cluster PF": "% Cluster PF", "Reads": "Reads (M)", "Aligned": "% PhiX"}
         df = df.rename(columns=mapper)
-        message += "\n{} metrics\n".format(lines[read_start[i]].rstrip())
+        message += "\n\n{} metrics\n".format(lines[read_start[i]].rstrip())
         message += df.to_string(index=False)
     return message
 
