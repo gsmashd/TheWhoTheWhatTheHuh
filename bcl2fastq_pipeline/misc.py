@@ -135,6 +135,12 @@ def getFCmetricsImproved(config):
         df = df[df["Surface"]=='-']
         df = df.drop(columns=["Surface"])
 
+        df["Density"] = [float(v.split(" ")[0]) for v in df["Density"]]
+        df["Cluster PF"] = [float(v.split(" ")[0]) for v in df["Cluster PF"]]
+        df["Aligned"] = [float(v.split(" ")[0]) for v in df["Aligned"]]
+
+        df = df.round(2)
+
         mapper = {"Cluster PF": "% Cluster PF", "Reads": "Reads (M)", "Aligned": "% PhiX"}
         df = df.rename(columns=mapper)
         message += "\n\n{} metrics\n".format(lines[read_start[i]].rstrip())
