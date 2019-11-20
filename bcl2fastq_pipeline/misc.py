@@ -104,7 +104,7 @@ def getFCmetrics(root) :
 def getFCmetricsImproved(config):
     message = ""
     try:
-        with open(os.path.join(config.get("Options","outputDir"),config.get("Options","runID"),"Stats","interop_summary.csv"),"r") as fh:
+        with open(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"),"Stats","interop_summary.csv"),"r") as fh:
             header = False
             while not header:
                 line = fh.readline()
@@ -137,7 +137,7 @@ def getFCmetricsImproved(config):
 
         mapper = {"Cluster PF": "% Cluster PF", "Reads": "Reads (M)", "Aligned": "% PhiX"}
         df = df.rename(columns=mapper)
-        message += "{} metrics\n".format(lines[read_start[i].rstrip()])
+        message += "\n{} metrics\n".format(lines[read_start[i]].rstrip())
         message += df.to_string(index=False)
     return message
 

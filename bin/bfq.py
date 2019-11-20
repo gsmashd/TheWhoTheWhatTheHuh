@@ -95,7 +95,7 @@ while True:
     #Get more statistics and create PDFs
     try :
         #message += "\n\n"+bcl2fastq_pipeline.misc.parseConversionStats(config)
-        message += "\n\n"+bcl2fastq_pipeline.misc.getFCmetricsImproved(config)
+        message += "\n"+bcl2fastq_pipeline.misc.getFCmetricsImproved(config)
     except :
         syslog.syslog("Got an error during parseConversionStats\n")
         bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during parseConversionStats")
