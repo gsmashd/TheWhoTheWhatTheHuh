@@ -127,18 +127,18 @@ def getFCmetricsImproved(config):
         if lines[read_start[i]].endswith("(I)\n"):
             continue
         tmpfh = tmp.NamedTemporaryFile(mode="w+")
-	tmpfh.writelines(lines[read_start[i]+1:read_start[i+1]])
-	tmpfh.seek(0)
-	df = pd.read_csv(tmpfh)
-	tmpfh.close()
-	df = df[["Lane","Surface","Density","Cluster PF","Reads","Aligned","%>=Q30"]]
-	df = df[df["Surface"]=='-']
-	df = df.drop(columns=["Surface"])
+        tmpfh.writelines(lines[read_start[i]+1:read_start[i+1]])
+        tmpfh.seek(0)
+        df = pd.read_csv(tmpfh)
+        tmpfh.close()
+        df = df[["Lane","Surface","Density","Cluster PF","Reads","Aligned","%>=Q30"]]
+        df = df[df["Surface"]=='-']
+        df = df.drop(columns=["Surface"])
 
-	mapper = {"Cluster PF": "% Cluster PF", "Reads": "Reads (M)", "Aligned": "% PhiX"}
-	df = df.rename(columns=mapper)
+        mapper = {"Cluster PF": "% Cluster PF", "Reads": "Reads (M)", "Aligned": "% PhiX"}
+        df = df.rename(columns=mapper)
         message += "{} metrics\n".format(lines[read_start[i].rstrip()])
-	message += df.to_string(index=False)
+        message += df.to_string(index=False)
     return message
 
 def parseConversionStats(config) :
