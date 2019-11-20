@@ -117,9 +117,9 @@ def getFCmetricsImproved(config):
 
     read_start = []
     for i,l in enumerate(lines):
-	if l.startswith("Read"):
+        if l.startswith("Read"):
             read_start.append(i)
-	elif l.startswith("Extracted"):
+        elif l.startswith("Extracted"):
             read_start.append(i)
             break
 
