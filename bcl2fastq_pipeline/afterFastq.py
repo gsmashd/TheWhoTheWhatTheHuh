@@ -659,7 +659,7 @@ def parserDemultiplexStats(config) :
         if(totals[i] == 0) :
             continue
         #Bad hack with "{:,}".format(val).replace(","," ") for separator, but avoids using locale. The "right" locale would also yield unwanted results (comma as separatpr)
-        out += "\nLane %i: %s of %s reads/pairs had undetermined indices (%5.2f%%)" % (
+        out += "\n<br>Lane %i: %s of %s reads/pairs had undetermined indices (%5.2f%%)" % (
             i+1,"{:,}".format(undetermined[i]).replace(","," "),"{:,}".format(totals[i]).replace(","," "),100*undetermined[i]/totals[i])
     return out
 
@@ -782,7 +782,7 @@ def postMakeSteps(config) :
     #Undetermined indices
     undeter = parserDemultiplexStats(config)
 
-    message = "Current free space for output: %i of %i gigs (%5.2f%%)\n" % (
+    message = "Current free space for output: %i of %i gigs (%5.2f%%)\n<br>" % (
         free,tot,100*free/tot)
 
     (tot,used,free) = shutil.disk_usage(config.get("Paths","baseDir"))
@@ -791,7 +791,7 @@ def postMakeSteps(config) :
     free /= 1024*1024*1024
 
 
-    message += "Current free space for instruments: %i of %i gigs (%5.2f%%)\n" % (
+    message += "Current free space for instruments: %i of %i gigs (%5.2f%%)\n<br>" % (
         free,tot,100*free/tot)
 
     message += undeter
