@@ -31,6 +31,23 @@ import json
 
 from bcl2fastq_pipeline.afterFastq import get_project_dirs, get_project_names, get_sequencer, get_read_geometry
 
+style = """
+<style>
+table {
+  border-collapse: collapse;
+}
+th {
+  padding: 4px;
+}
+td {
+  text-align:center;
+}
+table, th, td {
+  border: 1px solid black;
+}
+</style>
+"""
+
 
 def getSampleID(sampleTuple, project, lane, sampleName) :
     if(sampleTuple is None) :
@@ -143,8 +160,11 @@ def getFCmetricsImproved(config):
 
         mapper = {"Cluster PF": "% Cluster PF", "Reads": "Reads (M)", "Aligned": "% PhiX"}
         df = df.rename(columns=mapper)
-        message += "\n\n{} metrics\n".format(lines[read_start[i]].rstrip())
-        message += df.to_string(index=False,justify="center",col_space=12)
+        message += "\n<br>\n<br><strong>{} metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
+        #message += "<html>\n<body>\n<head></head>\n"
+        #message += df.to_html(index=False,justify="center",col_space=12)
+        message += df.to_html(index=False,classes="border-collapse: collapse",border=1,justify="center",col_space=12)
+        #message += "\n</body>\n</html>\n"
     return message
 
 def parseConversionStats(config) :
@@ -201,15 +221,17 @@ def finishedEmail(config, msg, runTime) :
 
     projects = get_project_names(get_project_dirs(config))
 
-    message = "Short summary for {}.\n\n".format(", ".join(projects))
-    message += "User: {}\n".format(config.get("Options","User")) if config.get("Options","User") != "N/A" else ""
-    message += "Flow cell: %s\n" % (config.get("Options","runID"))
-    message += "Sequencer: {}\n".format(get_sequencer(os.path.join(config.get("Paths","baseDir"),config.get("Options","runID"))))
-    message += "Read geometry: {}\n".format(get_read_geometry(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"))))
-    message += "bcl2fastq_pipeline run time: %s\n" % runTime
+    message = "Short summary for {}. \n\n".format(", ".join(projects))
+    message += "User: {} \n".format(config.get("Options","User")) if config.get("Options","User") != "N/A" else ""
+    message += "Flow cell: %s \n" % (config.get("Options","runID"))
+    message += "Sequencer: {} \n".format(get_sequencer(os.path.join(config.get("Paths","baseDir"),config.get("Options","runID"))))
+    message += "Read geometry: {} \n".format(get_read_geometry(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"))))
+    message += "bcl2fastq_pipeline run time: %s \n" % runTime
     #message += "Data transfer: %s\n" % transferTime
+    message = message.replace("\n","\n<br>")
     message += msg
 
+    message = "<html>\n<body>\n<head>\n" + style + "\n</head>\n" + message + "\n</body>\n</html>"
 
     odir = os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"))
 
@@ -221,7 +243,7 @@ def finishedEmail(config, msg, runTime) :
     msg['To'] = config.get("Email","finishedTo")
     msg['Date'] = formatdate(localtime=True)
 
-    msg.attach(MIMEText(message))
+    msg.attach(MIMEText(message,'html'))
 
     for p in projects:
         with open(os.path.join(odir,"QC_{pnr}/multiqc_{pnr}.html".format(pnr=p)),"rb") as report:
@@ -255,6 +277,8 @@ def finalizedEmail(config, msg, finalizeTime, runTime) :
     message += "Total runtime for bcl2fastq_pipeline: %s\n" % runTime
     #message += "Data transfer: %s\n" % transferTime
     message += msg
+
+    #message = "<html>\n<body>\n<head></head>\n" + message + "\n</body>\n</html>"
 
 
     odir = os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"))
