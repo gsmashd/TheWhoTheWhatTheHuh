@@ -130,7 +130,7 @@ def getFCmetricsImproved(config):
                     header = True
             lines = fh.readlines()
     except Exception as e:
-        return None
+        return "Not able to generate table for flowcell metrics."
 
     read_start = []
     for i,l in enumerate(lines):
