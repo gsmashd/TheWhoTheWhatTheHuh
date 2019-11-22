@@ -169,7 +169,7 @@ def getFCmetricsImproved(config):
         dfs[0] = dfs[0].rename(columns={"%>=Q30": "R1 %>=Q30"})
     dfs[0] = dfs[0].join(undeter.set_index("Lane"),on="Lane")
     #message += "\n<br>\n<br><strong>{} metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
-    message += "\n<br>\n<br><strong>Flowcell metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
+    message += "\n<br><strong>Flowcell metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
     message += dfs[0].to_html(index=False,classes="border-collapse: collapse",border=1,justify="center",col_space=12)
     return message
 
