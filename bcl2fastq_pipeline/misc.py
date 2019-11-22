@@ -166,8 +166,8 @@ def getFCmetricsImproved(config):
     undeter = parserDemultiplexStats(config)
     if len(dfs) > 1:
         dfs[0]["R2 %>=Q30"] = dfs[1]["%>=Q30"]
-        dfs[0].rename(columns={"%>=Q30": "R1 %>=Q30"})
-    dfs[0].join(undeter,on="Lane")
+        dfs[0] = dfs[0].rename(columns={"%>=Q30": "R1 %>=Q30"})
+    dfs[0] = dfs[0].join(undeter.set_index("Lane"),on="Lane")
     #message += "\n<br>\n<br><strong>{} metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
     message += "\n<br>\n<br><strong>Flowcell metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
     message += dfs[0].to_html(index=False,classes="border-collapse: collapse",border=1,justify="center",col_space=12)
@@ -227,7 +227,7 @@ def parserDemultiplexStats(config) :
         lanes.append(i+1)
         undeter.append(100*undetermined[i]/totals[i])
         #out_d.append({"Lane": i+1, "Undetermined": 100*undetermined[i]/totals[i]})
-    return pd.DataFrame.from_dict({'Lane': lanes, "% Undetermined": undeter})
+    return pd.DataFrame.from_dict({'Lane': lanes, "% Undetermined": undeter}).round(2)
 
 
 def parseConversionStats(config) :
@@ -288,7 +288,7 @@ def finishedEmail(config, msg, runTime) :
     message += "User: {} \n".format(config.get("Options","User")) if config.get("Options","User") != "N/A" else ""
     message += "Flow cell: %s \n" % (config.get("Options","runID"))
     message += "Sequencer: {} \n".format(get_sequencer(os.path.join(config.get("Paths","baseDir"),config.get("Options","runID"))))
-    message += "Read geometry: {} \n".format(get_read_geometry(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"))))
+    message += "Read geometry: {} \n\n".format(get_read_geometry(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"))))
     message += "bcl2fastq_pipeline run time: %s \n" % runTime
     #message += "Data transfer: %s\n" % transferTime
     message = message.replace("\n","\n<br>")
