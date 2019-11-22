@@ -620,55 +620,6 @@ def samplesheet_worker(config,project_dirs):
             )
 
 
-def parserDemultiplexStats(config) :
-    '''
-    Parse DemultiplexingStats.xml under outputDir/Stats/ to get the
-    number/percent of undetermined indices.
-
-    In particular, we extract the BarcodeCount values from Project "default"
-    Sample "all" and Project "all" Sample "all", as the former gives the total
-    undetermined and the later simply the total clusters
-    '''
-    lanes = config.get("Options", "lanes")
-    if lanes != "":
-        lanes = "_lanes{}".format(lanes)
-
-    totals = [0,0,0,0,0,0,0,0]
-    undetermined = [0,0,0,0,0,0,0,0]
-    tree = ET.parse("%s/%s%s/Stats/DemultiplexingStats.xml" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
-    root = tree.getroot()
-    for child in root[0].findall("Project") :
-        if(child.get("name") == "default") :
-            break
-    for sample in child.findall("Sample") :
-        if(sample.get("name") == "all") :
-            break
-    child = sample[0] #Get inside Barcode
-    for lane in child.findall("Lane") :
-        lnum = int(lane.get("number"))
-        undetermined[lnum-1] += int(lane[0].text)
-
-    for child in root[0].findall("Project") :
-        if(child.get("name") == "all") :
-            break
-    for sample in child.findall("Sample") :
-        if(sample.get("name") == "all") :
-            break
-    child = sample[0] #Get Inside Barcode
-    for lane in child.findall("Lane") :
-        lnum = int(lane.get("number"))
-        totals[lnum-1] += int(lane[0].text)
-
-    out = ""
-    for i in range(8) :
-        if(totals[i] == 0) :
-            continue
-        #Bad hack with "{:,}".format(val).replace(","," ") for separator, but avoids using locale. The "right" locale would also yield unwanted results (comma as separatpr)
-        out += "Lane %i: %s of %s reads/pairs had undetermined indices (%5.2f%%)\n<br>" % (
-            i+1,"{:,}".format(undetermined[i]).replace(","," "),"{:,}".format(totals[i]).replace(","," "),100*undetermined[i]/totals[i])
-    return out
-
-
 def clumpify_mark_done(config):
     global localConfig
     config = localConfig
@@ -785,9 +736,9 @@ def postMakeSteps(config) :
     free /= 1024*1024*1024
 
     #Undetermined indices
-    undeter = parserDemultiplexStats(config)
+    #undeter = parserDemultiplexStats(config)
 
-    message = "Current free space for output: %i of %i gigs (%5.2f%%)\n<br>" % (
+    message = "Current free space for output: %i of %i GiB (%5.2f%%)\n<br>" % (
         free,tot,100*free/tot)
 
     (tot,used,free) = shutil.disk_usage(config.get("Paths","baseDir"))
@@ -796,10 +747,10 @@ def postMakeSteps(config) :
     free /= 1024*1024*1024
 
 
-    message += "Current free space for instruments: %i of %i gigs (%5.2f%%)\n<br>\n<br>" % (
+    message += "Current free space for instruments: %i of %i GiB (%5.2f%%)\n<br>\n<br>" % (
         free,tot,100*free/tot)
 
-    message += undeter
+    #message += undeter
 
     #save configfile to flowcell
     with open(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),'bcl2fastq.ini'), 'w+') as configfile:

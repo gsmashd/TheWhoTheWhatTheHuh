@@ -139,7 +139,7 @@ def getFCmetricsImproved(config):
         elif l.startswith("Extracted"):
             read_start.append(i)
             break
-
+    dfs = []
     for i in range(len(read_start)-1):
         if lines[read_start[i]].endswith("(I)\n"):
             continue
@@ -158,14 +158,77 @@ def getFCmetricsImproved(config):
 
         df = df.round(2)
 
-        mapper = {"Cluster PF": "% Cluster PF", "Reads": "Reads (M)", "Aligned": "% PhiX"}
+        mapper = {"Cluster PF": "% Cluster PF", "Reads": " Total Reads (M)", "Aligned": "% PhiX"}
         df = df.rename(columns=mapper)
-        message += "\n<br>\n<br><strong>{} metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
-        #message += "<html>\n<body>\n<head></head>\n"
-        #message += df.to_html(index=False,justify="center",col_space=12)
-        message += df.to_html(index=False,classes="border-collapse: collapse",border=1,justify="center",col_space=12)
-        #message += "\n</body>\n</html>\n"
+        dfs.append(df)
+
+
+    undeter = parserDemultiplexStats(config)
+    if len(dfs) > 1:
+        dfs[0]["R2 %>=Q30"] = dfs[1]["%>=Q30"]
+        dfs[0].rename(columns={"%>=Q30": "R1 %>=Q30"})
+    dfs[0].join(undeter,on="Lane")
+    #message += "\n<br>\n<br><strong>{} metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
+    message += "\n<br>\n<br><strong>Flowcell metrics </strong>\n<br>".format(lines[read_start[i]].rstrip())
+    message += dfs[0].to_html(index=False,classes="border-collapse: collapse",border=1,justify="center",col_space=12)
     return message
+
+
+def parserDemultiplexStats(config) :
+    '''
+    Parse DemultiplexingStats.xml under outputDir/Stats/ to get the
+    number/percent of undetermined indices.
+
+    In particular, we extract the BarcodeCount values from Project "default"
+    Sample "all" and Project "all" Sample "all", as the former gives the total
+    undetermined and the later simply the total clusters
+    '''
+    lanes = config.get("Options", "lanes")
+    if lanes != "":
+        lanes = "_lanes{}".format(lanes)
+
+    totals = [0,0,0,0,0,0,0,0]
+    undetermined = [0,0,0,0,0,0,0,0]
+    tree = ET.parse("%s/%s%s/Stats/DemultiplexingStats.xml" % (config.get("Paths","outputDir"),config.get("Options","runID"), lanes))
+    root = tree.getroot()
+    for child in root[0].findall("Project") :
+        if(child.get("name") == "default") :
+            break
+    for sample in child.findall("Sample") :
+        if(sample.get("name") == "all") :
+            break
+    child = sample[0] #Get inside Barcode
+    for lane in child.findall("Lane") :
+        lnum = int(lane.get("number"))
+        undetermined[lnum-1] += int(lane[0].text)
+
+    for child in root[0].findall("Project") :
+        if(child.get("name") == "all") :
+            break
+    for sample in child.findall("Sample") :
+        if(sample.get("name") == "all") :
+            break
+    child = sample[0] #Get Inside Barcode
+    for lane in child.findall("Lane") :
+        lnum = int(lane.get("number"))
+        totals[lnum-1] += int(lane[0].text)
+
+    out = ""
+    lanes = []
+    undeter = []
+    for i in range(8) :
+        if(totals[i] == 0) :
+            continue
+        #Bad hack with "{:,}".format(val).replace(","," ") for separator, but avoids using locale. The "right" locale would also yield unwanted results (comma as separatpr)
+        """
+        out += "Lane %i: %s of %s reads/pairs had undetermined indices (%5.2f%%)\n<br>" % (
+            i+1,"{:,}".format(undetermined[i]).replace(","," "),"{:,}".format(totals[i]).replace(","," "),100*undetermined[i]/totals[i])
+        """
+        lanes.append(i+1)
+        undeter.append(100*undetermined[i]/totals[i])
+        #out_d.append({"Lane": i+1, "Undetermined": 100*undetermined[i]/totals[i]})
+    return pd.DataFrame.from_dict({'Lane': lanes, "% Undetermined": undeter})
+
 
 def parseConversionStats(config) :
     """
