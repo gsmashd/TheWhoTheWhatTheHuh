@@ -367,7 +367,7 @@ def md5sum_archive_worker(config):
     for p in pnames:
         if os.path.exists('md5sum_{}_archive.txt'.format(p)):
             continue
-        cmd = "md5sum {}.7za > md5sum_{}_archive.txt".format(p)
+        cmd = "md5sum {p}.7za > md5sum_{p}_archive.txt".format(p=p)
         syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
         subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
