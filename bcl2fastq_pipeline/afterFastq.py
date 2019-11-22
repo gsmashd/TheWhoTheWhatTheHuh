@@ -339,11 +339,12 @@ def get_sequencer(run_id):
 def get_sequencer_outputfolder(run_id):
 	return SEQUENCER_OUTPUTFOLDER.get(run_id.split('_')[1],'Sequencer could not be automatically determined.')
 
-def md5sum_worker(project_dirs) :
+def md5sum_worker(config):
     global localConfig
     config = localConfig
     old_wd = os.getcwd()
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+    project_dirs = get_project_dirs(config)
     pnames = get_project_names(project_dirs)
     for p in pnames:
         if os.path.exists('md5sum_{}_fastq.txt'.format(p)):
@@ -356,17 +357,21 @@ def md5sum_worker(project_dirs) :
         subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
 
-def md5sum_archive_worker(project_dirs) :
+def md5sum_archive_worker(config):
     global localConfig
     config = localConfig
     old_wd = os.getcwd()
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+    project_dirs = get_project_dirs(config)
     pnames = get_project_names(project_dirs)
+    print(pnames)
     for p in pnames:
+        print("md5sum {}".format(p))
         if os.path.exists('md5sum_{}_archive.txt'.format(p)):
             continue
         cmd = "md5sum {}.7za > md5sum_{}_archive.txt".format(p)
         syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','outputDir'), config.get('Options','runID')))
+        print(cmd)
         subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
 
@@ -804,9 +809,8 @@ def postMakeSteps(config) :
     return(message)
 
 def finalize(config):
-    projectDirs = get_project_dirs(config)
     #md5sum fastqs
-    md5sum_worker(projectDirs)
+    md5sum_worker(config)
     #zip arhive
     archive_worker(config)
     #md5sum archive
