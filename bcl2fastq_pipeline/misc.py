@@ -148,7 +148,7 @@ def getFCmetricsImproved(config):
         tmpfh.seek(0)
         df = pd.read_csv(tmpfh)
         tmpfh.close()
-        df = df[["Lane","Surface","Density","Cluster PF","Reads","Aligned","%>=Q30"]]
+        df = df[["Lane","Surface","Density","Reads","Cluster PF","Aligned","%>=Q30"]]
         df = df[df["Surface"]=='-']
         df = df.drop(columns=["Surface"])
 
@@ -284,8 +284,8 @@ def finishedEmail(config, msg, runTime) :
 
     projects = get_project_names(get_project_dirs(config))
 
-    message = "Short summary for {}. \n\n".format(", ".join(projects))
-    message += "User: {} \n".format(config.get("Options","User")) if config.get("Options","User") != "N/A" else ""
+    message = "<strong>Short summary for {}. </strong>\n\n".format(", ".join(projects))
+    message += "<strong>User: {} </strong>\n".format(config.get("Options","User")) if config.get("Options","User") != "N/A" else ""
     message += "Flow cell: %s \n" % (config.get("Options","runID"))
     message += "Sequencer: {} \n".format(get_sequencer(os.path.join(config.get("Paths","baseDir"),config.get("Options","runID"))))
     message += "Read geometry: {} \n\n".format(get_read_geometry(os.path.join(config.get("Paths","outputDir"),config.get("Options","runID"))))
