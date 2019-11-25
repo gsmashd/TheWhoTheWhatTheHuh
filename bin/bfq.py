@@ -138,6 +138,7 @@ while True:
             #Unrecoverable error
             syslog.syslog("Couldn't send the finalize email! Quiting")
             bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during finishedEmail()")
+            continue
 
         #Mark the flow cell as having been processed
         bcl2fastq_pipeline.findFlowCells.markFinished(config)
