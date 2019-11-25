@@ -42,7 +42,7 @@ while True:
         sys.exit("Error: couldn't read the config file!")
 
     #Get the next flow cell to process, or sleep
-       #HiSeq2500
+    #HiSeq2500
     dirs = glob.glob("%s/*/data/*_SN7001334_*/ImageAnalysis_Netcopy_complete.txt" % config.get("Paths","baseDir"))
     #NextSeq 500
     dirs.extend(glob.glob("%s/*/data/*_NB501038_*/RunCompletionStatus.xml" % config.get("Paths","baseDir")))
@@ -128,38 +128,18 @@ while True:
             syslog.syslog("Got an error during finalize!\n")
             bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), str(e))
             continue
-
         finalizeTime = datetime.datetime.now()-endTime
         runTime += finalizeTime
-
-        try :
+        try:
             bcl2fastq_pipeline.misc.finalizedEmail(config, "", finalizeTime, runTime)
-        except :
+        except:
             #Unrecoverable error
             syslog.syslog("Couldn't send the finalize email! Quiting")
             bcl2fastq_pipeline.misc.errorEmail(config, sys.exc_info(), "Got an error during finishedEmail()")
             continue
-
         #Mark the flow cell as having been processed
         bcl2fastq_pipeline.findFlowCells.markFinished(config)
 
     #done processing, no more flowcells in queue
     sleep(config)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
