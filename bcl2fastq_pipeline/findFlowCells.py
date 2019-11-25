@@ -118,53 +118,33 @@ This function always returns its configuration. If there's a new flow cell to
 process, then the runID is filled in. Otherwise, that's set to None.
 '''
 def newFlowCell(config) :
-    #HiSeq2500
-    dirs = glob.glob("%s/*/data/*_SN7001334_*/ImageAnalysis_Netcopy_complete.txt" % config.get("Paths","baseDir"))
-    #NextSeq 500
-    dirs.extend(glob.glob("%s/*/data/*_NB501038_*/RunCompletionStatus.xml" % config.get("Paths","baseDir")))
-    #MiSeq NTNU
-    dirs.extend(glob.glob("%s/*/data/*_M026575*_*/ImageAnalysis_Netcopy_complete.txt" % config.get("Paths","baseDir")))
-    #MiSeq St. Olav 
-    dirs.extend(glob.glob("%s/*/data/*_M03942*_*/ImageAnalysis_Netcopy_complete.txt" % config.get("Paths","baseDir")))
-    #MiSeq SINTEF 
-    dirs.extend(glob.glob("%s/*/data/*_M05617*_*/ImageAnalysis_Netcopy_complete.txt" % config.get("Paths","baseDir")))
-    #HiSeq4000
-    dirs.extend(glob.glob("%s/*/data/*_K00251*_*/SequencingComplete.txt" % config.get("Paths","baseDir")))
-    for d in dirs :
-        #Get the flow cell ID (e.g., 150416_SN7001180_0196_BC605HACXX)
-        config.set('Options','runID',d.split("/")[-2])
-        config.set('Options', 'sequencer',d.split("/")[-4])
-        if flowCellProcessed(config):
-            continue
+    #instrument_dir = os.path.dirname(d)
+    instrument_dir = os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),"data",config.get("Options","runID"))
+    odir = os.path.join(config.get("Paths", "outputDir"), config.get("Options", "runID"))
 
-        instrument_dir = os.path.dirname(d)
-        odir = os.path.join(config.get("Paths", "outputDir"), config.get("Options", "runID"))
+    #ss, opts = getSampleSheets(os.path.dirname(d))
+    ss, opts = getSampleSheets(instrument_dir)
+    sample_sub_f = glob.glob(os.path.join(instrument_dir,"*Sample-Submission-Form*.xlsx"))
 
-        ss, opts = getSampleSheets(os.path.dirname(d))
-        sample_sub_f = glob.glob(os.path.join(instrument_dir,"*Sample-Submission-Form*.xlsx"))
+    if not opts or not sample_sub_f:
+        continue
 
-        if not opts or not sample_sub_f:
-            continue
+    syslog.syslog("Found a new flow cell: %s\n" % config.get("Options","runID"))
+    if not os.path.exists(odir):
+        os.makedirs(odir)
 
-        syslog.syslog("Found a new flow cell: %s\n" % config.get("Options","runID"))
-        if not os.path.exists(odir):
-            os.makedirs(odir)
+    sample_sub_f = copy_sample_sub_form(instrument_dir,odir)
+    if ss is not None :
+        copyfile(ss,"{}/SampleSheet.csv".format(odir))
+        ss = "{}/SampleSheet.csv".format(odir)
+        config.set("Options","sampleSheet",ss)
+        config.set("Options","sampleSubForm",sample_sub_f if sample_sub_f else "")
+        config = setConfFromOpts(config,opts)
+    else :
+        config.set("Options","runID","")
+        config.set("Options","sequencer","")
+        config = setConfFromOpts(config,opts,use_dict_values=False)
 
-        sample_sub_f = copy_sample_sub_form(instrument_dir,odir)
-        if ss is not None :
-            copyfile(ss,"{}/SampleSheet.csv".format(odir))
-            ss = "{}/SampleSheet.csv".format(odir)
-            config.set("Options","sampleSheet",ss)
-            config.set("Options","sampleSubForm",sample_sub_f if sample_sub_f else "")
-            config = setConfFromOpts(config,opts)
-            return config
-        else :
-            config.set("Options","runID","")
-            config.set("Options","sequencer","")
-            config = setConfFromOpts(config,opts,use_dict_values=False)
-    config.set("Options","runID","")
-    config.set("Options","sequencer","")
-    config = setConfFromOpts(config,None,use_dict_values=False)
     return config
 
 def bool2strint(b):
