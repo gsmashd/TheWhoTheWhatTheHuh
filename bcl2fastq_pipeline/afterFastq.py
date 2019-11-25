@@ -494,6 +494,10 @@ def multiqc_stats(project_dirs) :
         os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get('Options','runID'),'RunInfo.xml'),
         os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'RunInfo.xml'),
         )
+    shutil.copyfile(
+        os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get('Options','runID'),'RunParameters.xml'),
+        os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'RunParameters.xml'),
+        )
 
     #Illumina interop
     cmd = "interop_summary {} --csv=1 > {}".format(
