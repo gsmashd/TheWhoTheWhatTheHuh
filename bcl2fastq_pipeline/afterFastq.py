@@ -24,6 +24,7 @@ import datetime as dt
 import flowcell_manager.flowcell_manager as fm
 import configmaker.configmaker as cm
 import pandas as pd
+import shutil
 
 localConfig = None
 
@@ -490,12 +491,24 @@ def multiqc_stats(project_dirs) :
     oldWd = os.getcwd()
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats'))
 
+    shutil.copyfile(
+        os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data','RunInfo.xml'),
+        os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'RunInfo.xml'),
+        )
+
     #Illumina interop
     cmd = "interop_summary {} --csv=1 > {}".format(
             os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")),
             os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats','interop_summary.csv'),
         )
     syslog.syslog("[multiqc_worker] Interop summary on %s\n" % os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")))
+    subprocess.check_call(cmd,shell=True)
+    
+    cmd = "interop_index-summary {} --csv=1 > {}".format(
+            os.path.join(config.get("Paths","outputDir"),config.get("Options","runID")),
+            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats','interop_index-summary.csv'),
+        )
+    syslog.syslog("[multiqc_worker] Interop index summary on %s\n" % os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get("Options","runID")))
     subprocess.check_call(cmd,shell=True)
 
     conf_name = "{}/{}/Stats/.multiqc_config.yaml".format(config.get('Paths','outputDir'), config.get('Options','runID'))
