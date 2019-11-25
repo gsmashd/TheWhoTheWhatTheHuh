@@ -24,7 +24,6 @@ import datetime as dt
 import flowcell_manager.flowcell_manager as fm
 import configmaker.configmaker as cm
 import pandas as pd
-import shutil
 
 localConfig = None
 
@@ -492,7 +491,7 @@ def multiqc_stats(project_dirs) :
     os.chdir(os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'Stats'))
 
     shutil.copyfile(
-        os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data','RunInfo.xml'),
+        os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get('Options','runID'),'RunInfo.xml'),
         os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'RunInfo.xml'),
         )
 
