@@ -127,7 +127,9 @@ def newFlowCell(config) :
     sample_sub_f = glob.glob(os.path.join(instrument_dir,"*Sample-Submission-Form*.xlsx"))
 
     if not opts or not sample_sub_f:
-        continue
+        config.set("Options","runID","")
+        config.set("Options","sequencer","")
+        return config
 
     syslog.syslog("Found a new flow cell: %s\n" % config.get("Options","runID"))
     if not os.path.exists(odir):
