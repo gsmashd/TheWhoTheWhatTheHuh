@@ -3,6 +3,7 @@ import sys
 import os
 import datetime
 import time
+import glob
 import syslog
 import bcl2fastq_pipeline.getConfig
 import bcl2fastq_pipeline.findFlowCells
