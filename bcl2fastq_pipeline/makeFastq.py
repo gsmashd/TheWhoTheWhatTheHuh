@@ -133,12 +133,9 @@ def bcl2fq(config) :
             config.get("Options","runID"),
         )
     syslog.syslog("[bcl2fq] Running: %s\n" % cmd)
-    logOut = open("%s/%s%s.stdout" % (config.get("Paths","logDir"), config.get("Options","runID"), lanes), "w")
-    logErr = open("%s/%s%s.stderr" % (config.get("Paths","logDir"), config.get("Options","runID"), lanes), "w")
-    #subprocess.check_call(cmd, stdout=logOut, stderr=logErr, shell=True)
-    subprocess.check_call("{} | tee {}.log".forat(cmd,os.path.join(config.get("Paths","logDir"),config.get("Options","runID"))), stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, shell=True)
+    logOut = open("%s/%s%s.log" % (config.get("Paths","logDir"), config.get("Options","runID"), lanes), "w")
+    subprocess.check_call(cmd, stdout=logOut, stderr=subprocess.STDOUT, shell=True)
     logOut.close()
-    logErr.close()
     os.chdir(old_wd)
 
 def getOffSpecies(fname) :
