@@ -134,16 +134,16 @@ if __name__=='__main__':
     parser_archive.add_argument("flowcell",type=str,help="Path to flowcell to be archived.")
     parser_archive.add_argument("--force",action="store_true",help="Force archive (no prompt)")
 
-    parser_archive = subparsers.add_parser("rerun",help="Rerun the flowcell by deleting the output directory.")
-    parser_archive.set_defaults(func=rerun_flowcell)
-    parser_archive.add_argument("flowcell",type=str,help="Path to flowcell to be deleted.")
-    parser_archive.add_argument("--force",action="store_true",help="Force archive (no prompt)")
+    parser_rerun = subparsers.add_parser("rerun",help="Rerun the flowcell by deleting the output directory.")
+    parser_rerun.set_defaults(func=rerun_flowcell)
+    parser_rerun.add_argument("flowcell",type=str,help="Path to flowcell to be deleted.")
+    parser_rerun.add_argument("--force",action="store_true",help="Force archive (no prompt)")
 
-    parser_archive = subparsers.add_parser("list",help="List all flowcells.")
-    parser_archive.set_defaults(func=list_all,print_res=True)
+    parser_list = subparsers.add_parser("list",help="List all flowcells.")
+    parser_list.set_defaults(func=list_all,print_res=True)
 
-    parser_archive = subparsers.add_parser("list-processed",help="List only flowcells in the inventory file processed by bfq pipeline.")
-    parser_archive.set_defaults(func=list_processed,print_res=True)
+    parser_list_processed = subparsers.add_parser("list-processed",help="List only flowcells in the inventory file processed by bfq pipeline.")
+    parser_list_processed.set_defaults(func=list_processed,print_res=True)
 
     args = parser.parse_args()
     if vars(args).get("print_res",False):
