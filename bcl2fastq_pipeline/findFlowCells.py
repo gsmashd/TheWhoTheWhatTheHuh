@@ -182,7 +182,7 @@ def markFinished(config) :
     now = dt.datetime.now()
     for gcf in project_names:
         fm.add_flowcell(project=gcf,
-            flowcell=os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),
+            path=os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),
             timestamp=now
             )
 

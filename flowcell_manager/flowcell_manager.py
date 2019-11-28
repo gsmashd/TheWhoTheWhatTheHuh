@@ -118,9 +118,7 @@ def pretty_print(df):
 
 
 if __name__=='__main__':
-    #main(sys.argv[1:])
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    #parser.add_argument("--add", help="Add flowcell to inventory")
     subparsers = parser.add_subparsers()
     parser_add = subparsers.add_parser("add",help="Add a project to the inventory file.")
     parser_add.set_defaults(func=add_flowcell)
