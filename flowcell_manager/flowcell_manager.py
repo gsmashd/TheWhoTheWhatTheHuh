@@ -8,30 +8,17 @@ import subprocess
 import datetime
 import argparse
 
-HELP_MESSAGE = """
-flowcell_manager.py usage \n
-\n
-flowcell_manager.py add project-name flowcell-path timestamp --- adds project to inventory file\n
-flowcell_manager.py archive-fowcell flowcell-path --- deletes the fastq.gz files and the .7za files for the flowcell\n\t\t use with --force to omit prompt\n
-flowcell_manager.py rerun-fowcell flowcell-path --- deletes the flowcell and all containing projects\n\t\t use with --force to omit prompt\n
-flowcell_manager.py list --- lists all processed projects in inventory file \n
-flowcell_manager.py list-all --- lists all projects in inventory file (also unprocessed)\n
-flowcell_manager.py list-project project-name --- lists all occurences of a specific project \n
-flowcell_manager.py list-flowcell flowcell-path --- lists all occurences of a specific flowcell-path that is processed\n
-flowcell_manager.py list-flowcell-all flowcell-path --- lists all occurences of a specific flowcell-path, even unprocessed flowcells \n
-flowcell_manager.py help --- print this message \n
-"""
 
 pd.set_option('display.max_rows', 5000)
 pd.set_option('display.max_columns', 6)
 
-def add_flowcell(args):
+def add_flowcell(**args):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     row_list = [
             {
-            'project': args.project,
-            'flowcell_path': args.path,
-            'timestamp': args.timestamp,
+            'project': args['project'],
+            'flowcell_path': args['path'],
+            'timestamp': args['timestamp'],
             'archived': 0
             }
             ]
@@ -45,11 +32,9 @@ def add_flowcell(args):
             )
 
 
-def archive_flowcell(args,force=False):
-    if '--force' in args:
-        force = True
-        args.remove('--force')
-    flowcell = args[0]
+def archive_flowcell(**args):
+    force = args.get("force",False)
+    flowcell = args['flowcell']
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     fc_for_deletion = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
@@ -74,12 +59,10 @@ def archive_flowcell(args,force=False):
             index=False,
             columns = ['project','flowcell_path','timestamp','archived'],
             )
- 
-def rerun_flowcell(args,force=False):
-    if '--force' in args:
-        force = True
-        args.remove('--force')
-    flowcell = args[0]
+
+def rerun_flowcell(**args):
+    force = args.get("force",False)
+    flowcell = args['flowcell']
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     fc_for_deletion = flowcells_processed.loc[flowcells_processed['flowcell_path'] == flowcell]
@@ -102,10 +85,13 @@ def rerun_flowcell(args,force=False):
             columns = ['project','flowcell_path','timestamp','archived'],
             )
 
-def list_processed():
+def list_processed(**args):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     return flowcells_processed.loc[(flowcells_processed['timestamp'] != '0') | (flowcells_processed['archived'] != '0')]
+
+def list_all(**args):
+    return pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
 
 def list_project(project):
     config = bcl2fastq_pipeline.getConfig.getConfig()
@@ -128,31 +114,6 @@ def pretty_print(df):
     for i, row in df.iterrows():
         print("{}\t{}\t{}\t{}".format(row['project'], row['flowcell_path'], row['timestamp'], row['archived']))
 
-def main(argv):
-
-    config = bcl2fastq_pipeline.getConfig.getConfig()
-    if argv[0] == 'add':
-        add_flowcell(*argv[1:])
-    elif argv[0] == 'archive-flowcell':
-        archive_flowcell(argv[1:])
-    elif argv[0] == 'rerun-flowcell':
-        rerun_flowcell(argv[1:])
-    elif argv[0] == 'list':
-        pretty_print(list_processed())
-    elif argv[0] == 'list-all':
-        df = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-        pretty_print(df)
-    elif argv[0] == 'list-project':
-        pretty_print(list_project(argv[1]))
-    elif argv[0] == 'list-flowcell':
-        pretty_print(list_flowcell(argv[1]))
-    elif argv[0] == 'list-flowcell-all':
-        pretty_print(list_flowcell_all(argv[1]))
-    elif argv[0] == 'help':
-        print(HELP_MESSAGE)
-    else:
-        print(HELP_MESSAGE)
-
 
 if __name__=='__main__':
     #main(sys.argv[1:])
@@ -165,12 +126,25 @@ if __name__=='__main__':
     parser_add.add_argument("path",type=str,help="Flowcell path.")
     parser_add.add_argument("timestamp",type=datetime.datetime.fromisoformat,help="A datetime isoformat string.")
 
-    parser_archive = subparsers.add_parser("archive-flowcell",help="Archive the flowcell by deleting fastq files and .7za archives.")
+    parser_archive = subparsers.add_parser("archive",help="Archive the flowcell by deleting fastq files and .7za archives.")
     parser_archive.set_defaults(func=archive_flowcell)
     parser_archive.add_argument("flowcell",type=str,help="Path to flowcell to be archived.")
     parser_archive.add_argument("--force",action="store_true",help="Force archive (no prompt)")
 
-    args = parser.parse_args()
-    args.func(args)
+    parser_archive = subparsers.add_parser("rerun",help="Rerun the flowcell by deleting the output directory.")
+    parser_archive.set_defaults(func=rerun_flowcell)
+    parser_archive.add_argument("flowcell",type=str,help="Path to flowcell to be deleted.")
+    parser_archive.add_argument("--force",action="store_true",help="Force archive (no prompt)")
 
+    parser_archive = subparsers.add_parser("list",help="List all flowcells.")
+    parser_archive.set_defaults(func=list_all,print_res=True)
+
+    parser_archive = subparsers.add_parser("list-processed",help="List only flowcells in the inventory file processed by bfq pipeline.")
+    parser_archive.set_defaults(func=list_processed,print_res=True)
+
+    args = parser.parse_args()
+    if vars(args).get("print_res",False):
+        pretty_print(args.func(**vars(args)))
+    else:
+        args.func(**vars(args))
 

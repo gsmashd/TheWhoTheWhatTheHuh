@@ -46,7 +46,7 @@ def rerunFlowcell(config):
         prev_start = os.path.getmtime(os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"),"SampleSheet.csv"))
         instr_ss = os.path.getmtime(ss)
         if instr_ss > prev_start:
-            fm.rerun_flowcell([os.path.join(config.get("Paths","outputDir"), config.get("Options","runID"))],force=True)
+            fm.rerun_flowcell(flowcell=os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),force=True)
             return True
     return False
 
@@ -181,7 +181,10 @@ def markFinished(config) :
     project_names = af.get_project_names(project_dirs)
     now = dt.datetime.now()
     for gcf in project_names:
-        fm.add_flowcell(gcf,os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),now)
+        fm.add_flowcell(project=gcf,
+            flowcell=os.path.join(config.get("Paths","outputDir"), config.get("Options","runID")),
+            timestamp=now
+            )
 
 
 
