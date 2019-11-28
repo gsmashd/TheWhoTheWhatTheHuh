@@ -25,13 +25,13 @@ flowcell_manager.py help --- print this message \n
 pd.set_option('display.max_rows', 5000)
 pd.set_option('display.max_columns', 6)
 
-def add_flowcell(project,path,timestamp):
+def add_flowcell(args):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     row_list = [
             {
-            'project': project,
-            'flowcell_path': path,
-            'timestamp': timestamp,
+            'project': args.project,
+            'flowcell_path': args.path,
+            'timestamp': args.timestamp,
             'archived': 0
             }
             ]
@@ -159,7 +159,7 @@ if __name__=='__main__':
     #main(sys.argv[1:])
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     #parser.add_argument("--add", help="Add flowcell to inventory")
-    subparsers = parse.add_subparsers()
+    subparsers = parser.add_subparsers()
     parser_add = subparsers.add_parser("add",help="adds project to inventory file")
     parser_add.set_defaults(func=add_flowcell)
     parser_add.add_argument("project",type=str,help="GCF project number")
