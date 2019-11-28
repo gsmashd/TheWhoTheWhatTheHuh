@@ -157,7 +157,7 @@ def main(argv):
 
 if __name__=='__main__':
     #main(sys.argv[1:])
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultHelpFormatter)
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     #parser.add_argument("--add", help="Add flowcell to inventory")
     subparsers = parse.add_subparsers()
     parser_add = subparsers.add_parser("add",help="adds project to inventory file")
