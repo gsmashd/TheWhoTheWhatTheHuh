@@ -6,6 +6,7 @@ import pandas as pd
 import os
 import subprocess
 import datetime
+import argparse
 
 HELP_MESSAGE = """
 flowcell_manager.py usage \n
