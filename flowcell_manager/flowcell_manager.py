@@ -45,7 +45,7 @@ def archive_flowcell(**args):
     if not force:
         print("Please confirm deletion of the following flowcell and the contained projects.\n")
         print(fc_for_deletion)
-        confirm = input("Delete? (yes/no)")
+        confirm = input("Delete? (yes/no): ").lower()
     if confirm == 'yes':
         deletions = [os.path.join(flowcell,pid) for pid in fc_for_deletion['project']]
         deletions.append("{}/*.fastq.gz".format(flowcell))
@@ -59,6 +59,8 @@ def archive_flowcell(**args):
             index=False,
             columns = ['project','flowcell_path','timestamp','archived'],
             )
+    else:
+        print("Skipping...")
 
 def rerun_flowcell(**args):
     force = args.get("force",False)
@@ -73,7 +75,7 @@ def rerun_flowcell(**args):
     if not force:
         print("Please confirm deletion of the following flowcell and the contained projects.\n")
         print(fc_for_deletion)
-        confirm = input("Delete? (yes/no)")
+        confirm = input("Delete? (yes/no): ").lower()
     if confirm == 'yes':
         cmd = "rm -rf {}".format(flowcell)
         print("DELETING FLOWCELL: {}".format(cmd))
@@ -84,11 +86,12 @@ def rerun_flowcell(**args):
             index=False,
             columns = ['project','flowcell_path','timestamp','archived'],
             )
+    else:
+        print("Skipping...")
 
 def list_processed(**args):
     config = bcl2fastq_pipeline.getConfig.getConfig()
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
-    #return flowcells_processed.loc[(flowcells_processed['timestamp'] != '0') | (flowcells_processed['archived'] != '0')]
     return flowcells_processed.loc[(flowcells_processed['timestamp'] != '0')]
 
 def list_all(**args):
