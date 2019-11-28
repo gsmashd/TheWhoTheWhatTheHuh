@@ -155,7 +155,17 @@ def main(argv):
 
 
 if __name__=='__main__':
-    main(sys.argv[1:])
+    #main(sys.argv[1:])
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultHelpFormatter)
+    #parser.add_argument("--add", help="Add flowcell to inventory")
+    subparsers = parse.add_subparsers()
+    parser_add = subparsers.add_parser("add",help="adds project to inventory file")
+    parser_add.set_defaults(func=add_flowcell)
+    parser_add.add_argument("project",type=str,help="GCF project number")
+    parser_add.add_argument("path",type=str,help="Flowcell path")
+    parser_add.add_argument("timestamp",type=datetime.datetime.fromisoformat,help="A datetime isoformat string")
 
+    args = parser.parse_args()
+    args.func(args)
 
 
