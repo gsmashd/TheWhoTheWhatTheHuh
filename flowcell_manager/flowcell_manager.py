@@ -35,7 +35,6 @@ def add_flowcell(args):
             'archived': 0
             }
             ]
-    
     df = pd.DataFrame(row_list)
     flowcells_processed = pd.read_csv(os.path.join(config.get("FlowCellManager","managerDir"),'flowcells.processed'))
     flowcells_processed = flowcells_processed.append(df)
@@ -160,11 +159,16 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     #parser.add_argument("--add", help="Add flowcell to inventory")
     subparsers = parser.add_subparsers()
-    parser_add = subparsers.add_parser("add",help="adds project to inventory file")
+    parser_add = subparsers.add_parser("add",help="Add a project to the inventory file.")
     parser_add.set_defaults(func=add_flowcell)
-    parser_add.add_argument("project",type=str,help="GCF project number")
-    parser_add.add_argument("path",type=str,help="Flowcell path")
-    parser_add.add_argument("timestamp",type=datetime.datetime.fromisoformat,help="A datetime isoformat string")
+    parser_add.add_argument("project",type=str,help="GCF project number.")
+    parser_add.add_argument("path",type=str,help="Flowcell path.")
+    parser_add.add_argument("timestamp",type=datetime.datetime.fromisoformat,help="A datetime isoformat string.")
+
+    parser_archive = subparsers.add_parser("archive-flowcell",help="Archive the flowcell by deleting fastq files and .7za archives.")
+    parser_archive.set_defaults(func=archive_flowcell)
+    parser_archive.add_argument("flowcell",type=str,help="Path to flowcell to be archived.")
+    parser_archive.add_argument("--force",action="store_true",help="Force archive (no prompt)")
 
     args = parser.parse_args()
     args.func(args)
