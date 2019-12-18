@@ -405,8 +405,8 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
         s_df = pd.read_csv(os.path.join(odir,'{}_samplesheet.tsv'.format(mqc_conf['title'])),sep='\t')
         s_df.index = s_df['Sample_ID']
 
-        max_260_230 = s_df['260/230'].max() if '260/230' in s_df.columns else 3
-        max_260_280 = s_df['260/280'].max() if '260/280' in s_df.columns else 3
+        max_260_230 = float(s_df['260/230'].max()) if '260/230' in s_df.columns else 3
+        max_260_280 = float(s_df['260/280'].max()) if '260/280' in s_df.columns else 3
 
         MAX = {
             'RIN': 10,
@@ -494,10 +494,17 @@ def multiqc_stats(project_dirs) :
         os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get('Options','runID'),'RunInfo.xml'),
         os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'RunInfo.xml'),
         )
-    shutil.copyfile(
-        os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get('Options','runID'),'RunParameters.xml'),
-        os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'RunParameters.xml'),
-        )
+    #Illumina sequencer update - RunParameters.xml -> runParameters.xml
+    if os.path.isfile(os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get('Options','runID'),'RunParameters.xml')):
+        shutil.copyfile(
+            os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get('Options','runID'),'RunParameters.xml'),
+            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'RunParameters.xml'),
+            )
+    else:
+        shutil.copyfile(
+            os.path.join(config.get("Paths","baseDir"),config.get("Options","sequencer"),'data',config.get('Options','runID'),'runParameters.xml'),
+            os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'),'RunParameters.xml'),
+            )
 
     #Illumina interop
     cmd = "interop_summary {} --csv=1 > {}".format(
