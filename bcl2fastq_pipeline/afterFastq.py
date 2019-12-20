@@ -372,6 +372,21 @@ def md5sum_archive_worker(config):
         subprocess.check_call(cmd, shell=True)
     os.chdir(old_wd)
 
+def md5sum_instrument_worker(config):
+    global localConfig
+    config = localConfig
+    old_wd = os.getcwd()
+    os.chdir(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID')))
+
+    if os.path.exists('md5sum_{}.txt'.format(config.get('Options','runID'))):
+        os.chdir(old_wd)
+        return
+    cmd = "md5sum {r}.7za > md5sum_{r}.txt".format(r=config.get('Options','runID'))
+    syslog.syslog("[md5sum_worker] Processing %s\n" % os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID')))
+    subprocess.check_call(cmd, shell=True)
+
+    os.chdir(old_wd)
+
 def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
     odir = os.path.join(config.get('Paths','outputDir'), config.get('Options','runID'))
     read_geometry = get_read_geometry(odir)
@@ -574,7 +589,7 @@ def instrument_archive_worker(config):
     if not os.path.exists(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'))):
         os.makedirs(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID')),exist_ok=True)
     if os.path.exists(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'), '{}.7za'.format(config.get('Options','runID')))):
-        os.remove(os.path.join(config.get('Paths','archiveInstr'), config.get('Options','runID'), '{}.7za'.format(config.get('Options','runID'))))
+        return
     pw = None
     if config.get("Options","SensitiveData") == "1":
         pw = subprocess.check_output("xkcdpass -n 5 -d '-' -v '[a-z]'",shell=True).decode().strip('\n')
@@ -788,5 +803,7 @@ def finalize(config):
     md5sum_archive_worker(config)
     #archive instruments
     instrument_archive_worker(config)
+    #md5sum instrument
+    md5sum_instrument_worker(config)
 
     return None
