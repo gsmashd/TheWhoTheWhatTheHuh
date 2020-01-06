@@ -437,6 +437,7 @@ def set_mqc_conf_header(config, mqc_conf, seq_stats=False):
 
         s_df.drop(['Sample_ID'], axis=1,inplace=True)
         s_df.dropna(how='all', axis=1, inplace=True)
+        s_df = s_df.round(2)
         s_dict = s_df.to_dict(orient='index')
 
         pconfig = {}
